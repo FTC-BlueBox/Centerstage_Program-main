@@ -74,10 +74,8 @@ public class Version1_OpMode extends LinearOpMode {
     double planePosition = readyPlanePosition;              //Set plane position
     double pixelReleasePosition = 0.0;                      //Dropped door position
     double pixelHeldPosition = 0.0;                         //Closed door position for pixel intake
-    double pixelPosition = pixelHeldPosition;
-    double armJoinHomePosition = 0.1;
-    double armJointPosition = armJoinHomePosition;
-    double armJointFLippedPosition = 0.4;
+    double pixelPosition = pixelHeldPosition;               //hold pixel in place
+
 
     @Override
     public void runOpMode() {
@@ -95,7 +93,6 @@ public class Version1_OpMode extends LinearOpMode {
         PLANE_SERVO = hardwareMap.get(Servo.class, "PLANE");
         OUTTAKE_ARM = hardwareMap.get(Servo.class, "OUTTAKE-ARM");
         PIXEL_HOLDER = hardwareMap.get(Servo.class, "PIXEL-HOLDER");
-        ARM_JOINT = hardwareMap.get(Servo.class, "ARM-JOINT");
 
         // Set zero power behavior to brake
         MOTOR1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -152,7 +149,7 @@ public class Version1_OpMode extends LinearOpMode {
                 MOTOR3.setPower(-MotorPower);
                 MOTOR4.setPower(-MotorPower);
             }
-            else if (gamepad1.right_stick_x != 0 || gamepad2.right_stick_x != 0)  // Robot Movement: Turning
+            else if (gamepad1.right_stick_x != 0 )  // Robot Movement: Turning
             {
                 MotorPower =  gamepad1.right_stick_x * reduceSpeedFactor;
 
@@ -161,7 +158,7 @@ public class Version1_OpMode extends LinearOpMode {
                 MOTOR3.setPower(-MotorPower);
                 MOTOR4.setPower(-MotorPower);
             }
-            else if (gamepad1.left_stick_x != 0 || gamepad2.left_stick_x != 0)      // Robot Movement: Strafing  (incorrect)
+            else if (gamepad1.left_stick_x != 0 )      // Robot Movement: Strafing  (incorrect)
             {
                 MotorPower =  gamepad1.left_stick_x * reduceSpeedFactor;
 
@@ -178,7 +175,7 @@ public class Version1_OpMode extends LinearOpMode {
                 MOTOR3.setPower(MotorPower);
                 MOTOR4.setPower(MotorPower);
             }
-            if (gamepad1.right_bumper) {                                                       // Bring up/down linear rack
+            if (gamepad1.x) {                                                       // Bring up/down linear rack
                 if (linearRackPos == linearRackHomePosition)
                 {
                     linearRackPos = linearRackHighPosition;
@@ -196,15 +193,6 @@ public class Version1_OpMode extends LinearOpMode {
                 }
                 OUTTAKE_ARM.setPosition(armPosition);
             }*/
-            if(gamepad1.a){
-                if(armJointPosition == armJoinHomePosition){
-                    armJointPosition = armJointFLippedPosition;
-                }else{
-                    armJointPosition = armJoinHomePosition;
-                }
-                ARM_JOINT.setPosition(armJointPosition);
-            }
-
 
             if(gamepad2.b){
                 if(pixelPosition == pixelHeldPosition){
