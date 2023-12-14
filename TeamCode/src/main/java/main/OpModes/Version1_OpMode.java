@@ -64,17 +64,17 @@ public class Version1_OpMode extends LinearOpMode {
     double intakeMotorPower = 0;                            // intake motor power
     int  linearRackHomePosition  = 0; // check               // linear rack home position (constant)
     int linearRackPos = linearRackHomePosition;                                  // linear rack set position
-    int  linearRackHighPosition  = 200;                     // linear rack high position (constant)
-    double armHomePosition = 0.0;                           // arm home position (constant)
-    double armFLippedPosition = -1.2;                        // arm flipped position (constant)
+    int  linearRackHighPosition  = -400;                     // linear rack high position (constant)
+    double armHomePosition = 0.65;                           // arm home position (constant)
+    double armFLippedPosition = 0.0;                        // arm flipped position (constant)
     double armPosition = armHomePosition;                    // set arm position
     double MotorPower = 0;                                  // originally start motor at 0
     double readyPlanePosition = 0.5;                        //pre-launch plane position
     double afterLaunchPosition = 1.0;                       //Post-launch plane position
     double planePosition = readyPlanePosition;              //Set plane position
-    double pixelReleasePosition = 0.0;                      //Dropped door position
-    double pixelHeldPosition = 0.0;                         //Closed door position for pixel intake
-    double pixelPosition = pixelHeldPosition;               //hold pixel in place
+    double pixelReleasePosition = 0.2;                      //Dropped door position
+    double pixelHomePosition = 0.4;                         //Closed door position for pixel intake
+    double pixelPosition = pixelHomePosition;               //hold pixel in place
 
 
     @Override
@@ -113,9 +113,9 @@ public class Version1_OpMode extends LinearOpMode {
         while(!opModeIsActive())
         {
             // start up arm to starting position
-            OUTTAKE_ARM.setPosition(armPosition);
+            OUTTAKE_ARM.setPosition(armPosition);   //main flipping servo
             PLANE_SERVO.setPosition(readyPlanePosition);
-            PIXEL_HOLDER.setPosition(pixelPosition);
+            PIXEL_HOLDER.setPosition(pixelPosition); //smaller pixel servo
 
 
             //  Alliance Color (X=Blue, B=Red)
@@ -133,14 +133,17 @@ public class Version1_OpMode extends LinearOpMode {
             MOTOR2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             MOTOR3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             MOTOR4.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            MOTOR_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);        // do this
+            MOTOR_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         }
         //  run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-
+        while (opModeIsActive())
+        {
             // gamepad 1 (is there overlap with controllers)
-            if (gamepad1.right_stick_y != 0 || gamepad2.right_stick_y != 0)      // Robot Movement: Forward and Backward
+            if (gamepad1.right_stick_y != 0)
+
+                  // Robot Movement: Forward and Backward
             {
                 MotorPower = gamepad1.right_stick_y * reduceSpeedFactor;
 
@@ -158,63 +161,92 @@ public class Version1_OpMode extends LinearOpMode {
                 MOTOR3.setPower(-MotorPower);
                 MOTOR4.setPower(-MotorPower);
             }
-            else if (gamepad1.left_stick_x != 0 )      // Robot Movement: Strafing  (incorrect)
+             else if (gamepad1.left_stick_x != 0 )      // Robot Movement: Strafing
             {
-                MotorPower =  gamepad1.left_stick_x * reduceSpeedFactor;
+                MotorPower = gamepad1.left_stick_x * reduceSpeedFactor;
 
                 MOTOR1.setPower(MotorPower);
                 MOTOR2.setPower(-MotorPower);
-                MOTOR3.setPower(-MotorPower);
-                MOTOR4.setPower(MotorPower);
-            } else{
+                MOTOR3.setPower(MotorPower);
+                MOTOR4.setPower(-MotorPower);
 
-                MotorPower =  0;
+            }
+             else
+            {
+                MotorPower =  0.0;
 
                 MOTOR1.setPower(MotorPower);
                 MOTOR2.setPower(MotorPower);
                 MOTOR3.setPower(MotorPower);
                 MOTOR4.setPower(MotorPower);
             }
-            if (gamepad1.x) {                                                       // Bring up/down linear rack
-                if (linearRackPos == linearRackHomePosition)
-                {
-                    linearRackPos = linearRackHighPosition;
-                }
-                else{
-                    linearRackPos = linearRackHomePosition;
-                }
-                MOTOR_LINEARRACK.setTargetPosition(linearRackPos);
-            }
-           /* if(gamepad1.x){//bty
+
+
+             //gamepad 1
+            if(gamepad1.y){                                         //change main arm position (top of servo)
                 if(armPosition == armHomePosition){
                     armPosition = armFLippedPosition;
-                } else {
+                    OUTTAKE_ARM.setPosition(armPosition);
+                }else{
                     armPosition = armHomePosition;
+                    OUTTAKE_ARM.setPosition(0.65);
                 }
-                OUTTAKE_ARM.setPosition(armPosition);
-            }*/
+            }
+            if (gamepad1.x)
+            {                                                       // Bring up/down linear rack
+                if (linearRackPos == linearRackHomePosition)
+                {
+                    PIXEL_HOLDER.setPosition(pixelReleasePosition);
+                    sleep(500);
+                    linearRackPos = linearRackHighPosition;
+                }
+                else
+                {
+                    PIXEL_HOLDER.setPosition(pixelHomePosition);
+                    sleep(700);
+                    pixelPosition = pixelHomePosition;
+                    linearRackPos = linearRackHomePosition;
+                }
 
-            if(gamepad2.b){
-                if(pixelPosition == pixelHeldPosition){
+
+                MOTOR_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_LINEARRACK.setTargetPosition(linearRackPos);
+                MOTOR_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LINEARRACK.isBusy())  MOTOR_LINEARRACK.setPower(-1);
+                else                            MOTOR_LINEARRACK.setPower(0);
+
+            }
+            /* supposed to change intake box position
+            if(gamepad1.a){
+                if(pixelPosition == pixelHomePosition){
                     pixelPosition = pixelReleasePosition;
-                } else{
-                    pixelPosition = pixelHeldPosition;
+
+                }else{
+                    pixelPosition = pixelHomePosition;
+
                 }
                 PIXEL_HOLDER.setPosition(pixelPosition);
-            }
 
-            // gamepad 2
+            }*/
+
+            //gamepad 2
+            if(gamepad2.b){                                                        //slant intake box incase linear rack doesnt go down
+                PIXEL_HOLDER.setPosition(0.5);
+
+            }
             if (gamepad2.x) {                                                      // start/stop intake
-                if (intakeMotorPower == 0){
-                    intakeMotorPower = 0.4;
+                if (linearRackPos != linearRackHomePosition) {
+                    if (intakeMotorPower == 0) {
+                        intakeMotorPower = 0.4;
+                    } else {
+                        intakeMotorPower = 0;
+                    }
+                    MOTOR_INTAKE.setPower(intakeMotorPower);
                 }
-                else {
-                    intakeMotorPower = 0;
-                }
-                MOTOR_INTAKE.setPower(intakeMotorPower);
             }
 
-            if(gamepad1.y){
+           if(gamepad2.y){
                 if (planePosition == readyPlanePosition){                         //Launch paper Airplane
                     planePosition = afterLaunchPosition;
                 } else {
