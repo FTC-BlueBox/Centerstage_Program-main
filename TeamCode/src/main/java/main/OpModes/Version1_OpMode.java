@@ -236,14 +236,14 @@ public class Version1_OpMode extends LinearOpMode {
 
             }
             if (gamepad2.x) {                                                      // start/stop intake
-                if (linearRackPos != linearRackHomePosition) {
+               // if (linearRackPos != linearRackHomePosition) {
                     if (intakeMotorPower == 0) {
                         intakeMotorPower = 0.4;
                     } else {
                         intakeMotorPower = 0;
                     }
                     MOTOR_INTAKE.setPower(intakeMotorPower);
-                }
+               // }
             }
 
            if(gamepad2.y){
