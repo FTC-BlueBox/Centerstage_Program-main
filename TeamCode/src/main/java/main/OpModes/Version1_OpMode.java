@@ -66,19 +66,20 @@ public class Version1_OpMode extends LinearOpMode {
 
         double MotorPower = 0.0;
         double reduceSpeedFactor = 0.4;                          // reduce motor power
-        double intakeMotorPower = -0.;
+        double intakeMotorPower = -0.8;
         int intakeStatus = 1;                                    //check if intake is running (binary)
 
         int linearRackHomePos = 0;
-        int linearRackHighPos = 1700;
+        int linearRackHighPos = 2500;
         int linearRackTarget = linearRackHomePos;
-        double holderHomePos = 0.0;
-        double holderFlippedPos = 0.9;
-        double holderPos = 0.0;
-        double planeLaunchPos = 0.0;
-        double planeHoldPos = 0.0;
+        double holderHomePos = 0.17;
+        double holderFlippedPos = 0.5;
+        double holderPos = holderHomePos;
+        double planeLaunchPos = 0.2;
+        double planeHoldPos = 0.6;
         double planePos = planeHoldPos;
-        double clampClosePos = 0.5;
+        double clamp1ClosePos = 1;
+        double clamp2ClosePos = 0.9;
         double clampOpenPos = 0.0;
         double clamp1Pos = clampOpenPos;
         double clamp2Pos = clampOpenPos;
@@ -120,9 +121,9 @@ public class Version1_OpMode extends LinearOpMode {
 
 
         // Bring servos to start position
-        //HOLDER_ROTATE.setPosition(holderPos);   //main arm flip
-        //CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
-        //CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
+        HOLDER_ROTATE.setPosition(holderPos);   //main arm flip
+        CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
+        CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
         PLANE_LAUNCH.setPosition(planeHoldPos); //plane launch hold position
 
         String ALLIANCE_COLOR = "";
@@ -226,7 +227,7 @@ public class Version1_OpMode extends LinearOpMode {
                      holderPos = holderHomePos;
                  }
                  HOLDER_ROTATE.setPosition(holderPos);
-                 sleep(100);
+                 sleep(200);
              }
              if(gamepad1.b){
                  if(intakeStatus == 1){
@@ -250,94 +251,24 @@ public class Version1_OpMode extends LinearOpMode {
              }
              if(gamepad1.right_bumper){                        //Open/Close clamp 1
                  if (clamp1Pos == clampOpenPos) {
-                     CLAMP1.setPosition(clampClosePos);
-                     clamp1Pos = clampClosePos;
+                     CLAMP1.setPosition(clamp1ClosePos);
+                     clamp1Pos = clamp1ClosePos;
                  }else{
                      CLAMP1.setPosition(clampOpenPos);
                      clamp1Pos = clampOpenPos;
                  }
-                 sleep(100);
+                 sleep(200);
              }
             if(gamepad1.left_bumper){                        //Open/Close clamp 2
                 if (clamp2Pos == clampOpenPos) {
-                    CLAMP2.setPosition(clampClosePos);
-                    clamp2Pos = clampClosePos;
+                    CLAMP2.setPosition(clamp2ClosePos);
+                    clamp2Pos = clamp2ClosePos;
                 }else{
                     CLAMP2.setPosition(clampOpenPos);
                     clamp2Pos = clampOpenPos;
                 }
-                sleep(100);
+                sleep(200);
             }
-
-
-/*
-
-             //gamepad 1
-            if(gamepad1.y){                                         //change main arm position (top of servo)
-                if(armPosition == armHomePosition){
-                    armPosition = armFLippedPosition;
-                    OUTTAKE_ARM.setPosition(0.3);
-                    sleep(300);
-                    OUTTAKE_ARM.setPosition(0.0);
-                    sleep(300);
-
-                    OUTTAKE_ARM.setPosition(armFLippedPosition );
-
-                }else{
-                    armPosition = armHomePosition;
-                    OUTTAKE_ARM.setPosition(armPosition);
-                }
-            }
-
-
-
-                MOTOR_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                MOTOR_LINEARRACK.setTargetPosition(linearRackPos);
-                MOTOR_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                if (MOTOR_LINEARRACK.isBusy())  MOTOR_LINEARRACK.setPower(-1);
-                else                            MOTOR_LINEARRACK.setPower(0);
-
-            }
-            // supposed to change intake box position
-            if(gamepad1.a){
-                if(pixelPosition == pixelHomePosition){
-                    pixelPosition = pixelReleasePosition;
-
-                }else{
-                    pixelPosition = pixelHomePosition;
-
-                }
-                PIXEL_HOLDER.setPosition(pixelPosition);
-
-            }
-
-            //gamepad 2
-            if(gamepad2.b){                                                        //slant intake box incase linear rack doesnt go down
-                PIXEL_HOLDER.setPosition(0.8);
-
-            }
-            if (gamepad2.x) {                                                      // start/stop intake
-               // if (linearRackPos != linearRackHomePosition) {
-                    if (intakeMotorPower == 0) {
-                        intakeMotorPower = 0.4;
-                    } else {
-                        intakeMotorPower = 0;
-                    }
-                    MOTOR_INTAKE.setPower(intakeMotorPower);
-               // }
-            }
-
-           if(gamepad2.y){
-                if (planePosition == readyPlanePosition){                         //Launch paper Airplane
-                    planePosition = afterLaunchPosition;
-                } else {
-                    planePosition = readyPlanePosition;
-                }
-                PLANE_SERVO.setPosition(planePosition);
-            }
-
-*/
 
             telemetry.update();
         }
