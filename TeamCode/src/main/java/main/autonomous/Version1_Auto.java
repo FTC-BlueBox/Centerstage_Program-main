@@ -58,7 +58,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class Version1_Auto extends LinearOpMode {
     private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
     /* Declare OpMode members. */
-    private ElapsedTime     runtime = new ElapsedTime();
+    private ElapsedTime runtime = new ElapsedTime();
     double MotorPower = 0.4;
 
     static final double     FORWARD_SPEED = 0.6;
@@ -73,10 +73,6 @@ public class Version1_Auto extends LinearOpMode {
         MOTOR3  = hardwareMap.get(DcMotor.class, "MOTOR3");
         MOTOR4 = hardwareMap.get(DcMotor.class, "MOTOR4");
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-
         // Send telemetry message to signify robot waiting;
         telemetry.addData("linear rack faces backdrop", "Ready to run");    //
         telemetry.update();
@@ -84,13 +80,8 @@ public class Version1_Auto extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        // Step through each leg of the path, ensuring that the Auto mode has not been stopped along the way
 
         // Step 1:  Drive forward for 3 seconds
-
-
-        // Step 2:  Spin right for 1.3 seconds
-
         MOTOR1.setPower(MotorPower);
         MOTOR2.setPower(MotorPower);
         MOTOR3.setPower(-MotorPower);
@@ -100,6 +91,10 @@ public class Version1_Auto extends LinearOpMode {
         MOTOR2.setPower(0);
         MOTOR3.setPower(0);
         MOTOR4.setPower(0);
+
+       if(propPosition == 1){
+         telemetry.addData("prop has been identified");   
+       }
 
     }
 }
