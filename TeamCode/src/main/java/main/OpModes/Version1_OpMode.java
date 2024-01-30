@@ -59,6 +59,8 @@ public class Version1_OpMode extends LinearOpMode {
     private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
     private DcMotor MOTOR_LEFT_LINEARRACK,MOTOR_RIGHT_LINEARRACK, MOTOR_INTAKE;
     private Servo HOLDER_ROTATE, CLAMP1, PLANE_LAUNCH, CLAMP2, AUTOHOLDER;
+    public String ALLIANCE_COLOR = "";
+    public String propPosition;
 
 
     @Override
@@ -126,8 +128,6 @@ public class Version1_OpMode extends LinearOpMode {
         CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
         PLANE_LAUNCH.setPosition(planeHoldPos); //plane launch hold position
 
-        String ALLIANCE_COLOR = "";
-
         //  Wait for the game to start (driver presses PLAY)
         while(!opModeIsActive())
         {
@@ -135,7 +135,7 @@ public class Version1_OpMode extends LinearOpMode {
             if      (gamepad1.x || gamepad2.x)  ALLIANCE_COLOR = "BLUE";
             else if (gamepad1.b || gamepad2.b)  ALLIANCE_COLOR = "RED";
 
-            telemetry.addData("Alliance", ALLIANCE_COLOR);
+            telemetry.addData("Alliance: ", ALLIANCE_COLOR);
             telemetry.update();
 
 

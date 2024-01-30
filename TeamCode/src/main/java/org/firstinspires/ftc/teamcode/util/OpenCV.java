@@ -13,6 +13,7 @@ public class OpenCV extends OpMode{
     @Override
     public void init(){
 
+        //creating webcam
         WebcamName webcamName = hardwareMap.get(WebcameName.class,"webcam");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -40,7 +41,8 @@ public class OpenCV extends OpMode{
         double leftavgfin;
         double rightavgfin;
         Mat outPut = new Mat();
-        Scalar rectColor = new Scalar(255.0,0.0,0.0);
+        Scalar rectColorRed = new Scalar(255.0,0.0,0.0);
+        Scalar rectColorBlue = new Scalar(0.0,0.0,255.0);
 
         public Mat processFram(Mat input){
             Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
@@ -50,9 +52,14 @@ public class OpenCV extends OpMode{
             Rect rightRect = new Rect(539,1,539,719);
 
             input.copyTo(outPut);
-            Imgproc.rectangle(outPut,leftRect,rectColor,2);
-            Imgproc.rectangle(outPut, rightRect, rectColor, 2);
-
+            if(ALLIANCE_COLOR == "blue"){
+                Imgproc.rectangle(outPut,leftRect,rectColorBlue,2);
+                Imgproc.rectangle(outPut, rightRect, rectColorBlue, 2);
+            } else if (ALLIANCE_COLOR == "red"){
+                Imgproc.rectangle(outPut,leftRect,rectColorRed,2);
+                Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
+            }
+            
             leftCrop = YCbCr.submat(leftRect);
             rightCrop = YCbCr.submat(rightRect);
 
@@ -67,8 +74,12 @@ public class OpenCV extends OpMode{
 
             if(leftavgfin > rightavgfin){
                 telemetry.addLine("left");
-            }else{
+                propPosition = 1;
+            }else if (leftavgfin < rightavgfin){
                 telemetry.addLine("right")
+                propPosition = 2;
+            }else{
+                propPosition = 3;
             }
 
             return(outPut);
