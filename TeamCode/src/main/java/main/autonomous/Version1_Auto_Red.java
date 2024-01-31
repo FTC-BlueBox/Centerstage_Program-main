@@ -93,7 +93,7 @@ public class Version1_Auto_Red extends OpMode {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
 
-        webcam.setPipeline(new OpenCV.examplePipeline());
+        webcam.setPipeline(new examplePipeline());
 
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             public void onOpened(){
@@ -103,6 +103,8 @@ public class Version1_Auto_Red extends OpMode {
             }
         });
     }
+
+    
     @Override //will any of this work?!
     public void loop(){
         MOTOR1  = hardwareMap.get(DcMotor.class, "MOTOR1");
@@ -123,7 +125,7 @@ public class Version1_Auto_Red extends OpMode {
         MOTOR3.setPower(0);
         MOTOR4.setPower(0);*/
     }
-    class examplePipeline extends OpenCvPipeline {
+    public static class examplePipeline extends OpenCvPipeline {
         Mat YCbCr = new Mat();
         Mat leftCrop;
         Mat rightCrop;
@@ -135,42 +137,49 @@ public class Version1_Auto_Red extends OpMode {
 
         public Mat processFrame(Mat input){
             Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
-            telemetry.addLine("pipeline running");
+           // telemetry.addLine("pipeline running");
 
-            Rect leftRect = new Rect(1,1,511,566);
-            Rect rightRect = new Rect(511,1,511,566);
+            Rect leftRect = new Rect(1,1,340,575);
+            Rect middleRect = new Rect(340,1,679,575);
+            Rect rightRect = new Rect(679,1,1023,575);
 
             input.copyTo(outPut);
             if(Version1_OpMode.ALLIANCE_COLOR == "blue"){
                 Imgproc.rectangle(outPut,leftRect,rectColorBlue,2);
                 Imgproc.rectangle(outPut, rightRect, rectColorBlue, 2);
+                Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
             } else if (Version1_OpMode.ALLIANCE_COLOR == "red"){
                 Imgproc.rectangle(outPut,leftRect,rectColorRed,2);
                 Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
+                Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
             }
-
+            
             leftCrop = YCbCr.submat(leftRect);
             rightCrop = YCbCr.submat(rightRect);
+            middleCrop = YCbCr.submat(middleRect)
 
             Core.extractChannel(leftCrop, leftCrop, 2);
             Core.extractChannel(rightCrop, rightCrop, 2);
+            Core.extractChannel(middleCrop, middleCrop,2);
 
             Scalar leftavg = Core.mean(leftCrop);
             Scalar rightavg = Core.mean(rightCrop);
+            Slalar middleavg = Core.mean(middleCrop);
 
             leftavgfin = leftavg.val[0];
             rightavgfin = rightavg.val[0];
+            middleavgfin = middleavg.val[0];
 
 
-            if(leftavgfin < rightavgfin){
+            if(leftavgfin < rightavgfin && leftavgfin < middleavgfin){
                 telemetry.addLine("1");
                 Version1_OpMode.propPosition = 1;
-            }else if (leftavgfin > rightavgfin){
-                telemetry.addLine("2");
-                Version1_OpMode.propPosition = 2;
-            }else{
-                Version1_OpMode.propPosition = 3;
+            }else if (leftavgfin > rightavgfin && leftavgfin > middleavgfin){
                 telemetry.addLine("3");
+                Version1_OpMode.propPosition = 3;
+            }else{
+                Version1_OpMode.propPosition = 2;
+                telemetry.addLine("2");
             }
 
             return(outPut);
