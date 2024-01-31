@@ -59,8 +59,8 @@ public class Version1_OpMode extends LinearOpMode {
     private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
     private DcMotor MOTOR_LEFT_LINEARRACK,MOTOR_RIGHT_LINEARRACK, MOTOR_INTAKE;
     private Servo HOLDER_ROTATE, CLAMP1, PLANE_LAUNCH, CLAMP2, AUTOHOLDER;
-    public String ALLIANCE_COLOR = "";
-    public String propPosition;
+    public static String ALLIANCE_COLOR = "";
+    public static int propPosition;
 
 
     @Override
@@ -72,10 +72,10 @@ public class Version1_OpMode extends LinearOpMode {
         int intakeStatus = 1;                                    //check if intake is running (binary)
 
         int linearRackHomePos = 0;
-        int linearRackHighPos = 2500;
+        int linearRackHighPos = 3200;
         int linearRackTarget = linearRackHomePos;
         double holderHomePos = 0.17;
-        double holderFlippedPos = 0.5;
+        double holderFlippedPos = 0.55;
         double holderPos = holderHomePos;
         double planeLaunchPos = 0.2;
         double planeHoldPos = 0.6;
@@ -128,8 +128,9 @@ public class Version1_OpMode extends LinearOpMode {
         CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
         PLANE_LAUNCH.setPosition(planeHoldPos); //plane launch hold position
 
-        //  Wait for the game to start (driver presses PLAY)
-        while(!opModeIsActive())
+        //  Wait for the ga
+        //  me to start (driver presses PLAY)
+       /* while(!opModeIsActive())
         {
             //  Alliance Color (X=Blue, B=Red)
             if      (gamepad1.x || gamepad2.x)  ALLIANCE_COLOR = "BLUE";
@@ -140,7 +141,7 @@ public class Version1_OpMode extends LinearOpMode {
 
 
             waitForStart();                                                     //  Wait for the Play Button press
-        }
+        }*/
         if (opModeIsActive()) {
 
             // Turn on encoders
@@ -155,7 +156,6 @@ public class Version1_OpMode extends LinearOpMode {
         //  run until the end of the match (driver presses STOP)
         while (opModeIsActive())
         {
-
             // gamepad 1
             if(gamepad2.right_stick_y == 0 && gamepad2.right_stick_x == 0 && gamepad2.left_stick_x == 0){
                 if (gamepad1.right_stick_y != 0)                            // Robot Movement: Forward and Backward
@@ -235,11 +235,11 @@ public class Version1_OpMode extends LinearOpMode {
                 }
             }
             //both gamepads: drive
-            //gamepad 1: intake is front, turns on intake, closes both clamps
-            //gamepad 2: LR is front, lifts LR + swing (semiauto), releases clamps, bring down all at once
+            //gamepad 2: intake is front, turns on intake, closes both clamps
+            //gamepad 1: LR is front, lifts LR + swing (semiauto), releases clamps, bring down all at once
 
             //gamepad2
-             if(gamepad2.y){                                  //Linear rack manual up and down movement
+             if(gamepad1.y){                                  //Linear rack manual up and down movement
                  if(linearRackTarget == linearRackHomePos){
                      MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                       MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
@@ -263,7 +263,7 @@ public class Version1_OpMode extends LinearOpMode {
 
                  sleep(1000);
              }
-             if(gamepad2.a){                                 //manually flip holder
+             if(gamepad1.a){                                 //manually flip holder
                 if(holderPos == holderHomePos){
                     holderPos = holderFlippedPos;
                 } else{
@@ -272,7 +272,7 @@ public class Version1_OpMode extends LinearOpMode {
                 HOLDER_ROTATE.setPosition(holderPos);
                 sleep(200);
             }
-           if(gamepad2.right_bumper) {                      //semi-auto bring pixels up
+           if(gamepad1.right_bumper) {                      //semi-auto bring pixels up
                 if(linearRackTarget == linearRackHomePos){  //first bring up linear rack
                     MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                     MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
@@ -282,7 +282,7 @@ public class Version1_OpMode extends LinearOpMode {
                     MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                     MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                     linearRackTarget = linearRackHomePos;
-                    holderPos = holderHomePos               //flip box before coming down
+                    holderPos = holderHomePos;                //flip box before coming down
                     HOLDER_ROTATE.setPosition(holderPos);
                     sleep(200);
                 }
@@ -298,25 +298,35 @@ public class Version1_OpMode extends LinearOpMode {
                 else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                 sleep(1300);
-                if(linearRackTarget = linearRackHighPos){    //flip box at the top
+                if(linearRackTarget == linearRackHighPos){    //flip box at the top
                     holderPos = holderFlippedPos;
                     HOLDER_ROTATE.setPosition(holderPos);
                     sleep(200);
                 }
                 
            }
-           if(gamepad2.left_bumper){                         //Open both clamps
-                CLAMP1.setPosition(clampOpenPos);
-                clamp1Pos = clampOpenPos;
-                CLAMP2.setPosition(clampOpenPos);
-                clamp2Pos = clampOpenPos;
-                sleep(200);
+           if(gamepad1.left_bumper){                         //Open both clamps
+               if (clamp1Pos == clampOpenPos) {
+                   CLAMP1.setPosition(clamp1ClosePos);
+                   clamp1Pos = clamp1ClosePos;
+               }else{
+                   CLAMP1.setPosition(clampOpenPos);
+                   clamp1Pos = clampOpenPos;
+               }
+               if (clamp2Pos == clampOpenPos) {
+                   CLAMP2.setPosition(clamp2ClosePos);
+                   clamp2Pos = clamp2ClosePos;
+               }else{
+                   CLAMP2.setPosition(clampOpenPos);
+                   clamp2Pos = clampOpenPos;
+               }
+               sleep(200);
            }
         
             
 
-           //gamepad 1
-           if(gamepad1.b){                                      //Turn on intake               
+           //gamepad 2
+           if(gamepad2.a){                                      //Turn on intake
             if(linearRackTarget == linearRackHomePos && holderPos == holderHomePos){
                 if(intakeStatus == 1){
                     MOTOR_INTAKE.setPower(0.0);
@@ -328,7 +338,24 @@ public class Version1_OpMode extends LinearOpMode {
                 sleep(200);
             }
          }
-             if(gamepad1.right_bumper){                        //Open/Close clamp 1 (manual)
+            if(gamepad2.b){                                  //close both clamps
+                if (clamp1Pos == clampOpenPos) {
+                    CLAMP1.setPosition(clamp1ClosePos);
+                    clamp1Pos = clamp1ClosePos;
+                }else{
+                    CLAMP1.setPosition(clampOpenPos);
+                    clamp1Pos = clampOpenPos;
+                }
+                if (clamp2Pos == clampOpenPos) {
+                    CLAMP2.setPosition(clamp2ClosePos);
+                    clamp2Pos = clamp2ClosePos;
+                }else{
+                    CLAMP2.setPosition(clampOpenPos);
+                    clamp2Pos = clampOpenPos;
+                }
+                sleep(200);
+            }
+             if(gamepad2.right_bumper){                        //Open/Close clamp 1 (manual)
                 if (clamp1Pos == clampOpenPos) {
                     CLAMP1.setPosition(clamp1ClosePos);
                     clamp1Pos = clamp1ClosePos;
@@ -338,7 +365,7 @@ public class Version1_OpMode extends LinearOpMode {
                 }
                 sleep(200);
             }
-           if(gamepad1.left_bumper){                            //Open/Close clamp 2 (manual)
+           if(gamepad2.left_bumper){                            //Open/Close clamp 2 (manual)
                if (clamp2Pos == clampOpenPos) {
                    CLAMP2.setPosition(clamp2ClosePos);
                    clamp2Pos = clamp2ClosePos;
@@ -348,7 +375,7 @@ public class Version1_OpMode extends LinearOpMode {
                }
                sleep(200);
            }
-             if(gamepad1.x){                                    //Launch Plane
+             if(gamepad2.x){                                    //Launch Plane
                  if(planePos == planeHoldPos){
                      planePos = planeLaunchPos;
                  } else {
@@ -361,7 +388,7 @@ public class Version1_OpMode extends LinearOpMode {
 
             //Logic
             if(linearRackTarget == linearRackHomePos && clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos){
-                HOLDER_ROTATE.setPosition(holderPos + 0.2);             //check this - lift intake when driving
+                HOLDER_ROTATE.setPosition(holderPos - 0.1);             //check this - lift intake when driving
             }
 
             telemetry.update();
