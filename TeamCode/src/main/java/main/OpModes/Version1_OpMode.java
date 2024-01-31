@@ -27,6 +27,7 @@
          * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
          * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
          */
+        //dead zone, box hit
 
         package main.OpModes;
 
@@ -195,7 +196,7 @@ public class Version1_OpMode extends LinearOpMode {
                     MOTOR3.setPower(MotorPower);
                     MOTOR4.setPower(MotorPower);
                 }
-            } else if(gamepad1.right_stick_y == 0 && gamepad1.right_stick_x == 0 && gamepad1.left_stick_x == 0){
+            } else{
                 if (gamepad2.right_stick_y != 0)                            // Robot Movement: Forward and Backward (flipped)
                 {
                     MotorPower = -gamepad2.right_stick_y * reduceSpeedFactor;
@@ -238,7 +239,7 @@ public class Version1_OpMode extends LinearOpMode {
             //gamepad 2: intake is front, turns on intake, closes both clamps
             //gamepad 1: LR is front, lifts LR + swing (semiauto), releases clamps, bring down all at once
 
-            //gamepad2
+            //gamepad1
              if(gamepad1.y){                                  //Linear rack manual up and down movement
                  if(linearRackTarget == linearRackHomePos){
                      MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
@@ -249,6 +250,11 @@ public class Version1_OpMode extends LinearOpMode {
                      MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                      MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                      linearRackTarget = linearRackHomePos;
+                     if(holderPos != holderHomePos){
+                        holderPos = holderHomePos;
+                        HOLDER_ROTATE.setPosition(holderPos + 0.1);
+                        sleep(200);
+                     }
                  }
                  MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                  MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -262,6 +268,10 @@ public class Version1_OpMode extends LinearOpMode {
                  else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                  sleep(1000);
+
+                 HOLDER_ROTATE.setPosition(holderHomePos);
+                 sleep(50);
+                }
              }
              if(gamepad1.a){                                 //manually flip holder
                 if(holderPos == holderHomePos){
