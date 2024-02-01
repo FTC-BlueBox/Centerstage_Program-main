@@ -18,7 +18,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import main.OpModes.Version1_OpMode;
 
 
-@Autonomous
+@Autonomous(name="open cv test", group="")
 public class OpenCV extends OpMode{
     
     OpenCvWebcam webcam = null;
@@ -47,12 +47,14 @@ public class OpenCV extends OpMode{
 
     }
 
-    public static class examplePipeline extends OpenCvPipeline {
+    public class examplePipeline extends OpenCvPipeline {
         Mat YCbCr = new Mat();
         Mat leftCrop;
         Mat rightCrop;
+        Mat middleCrop;
         double leftavgfin;
         double rightavgfin;
+        double middleavgfin;
         Mat outPut = new Mat();
         Scalar rectColorRed = new Scalar(255.0,0.0,0.0);
         Scalar rectColorBlue = new Scalar(0.0,0.0,255.0);
@@ -78,7 +80,7 @@ public class OpenCV extends OpMode{
             
             leftCrop = YCbCr.submat(leftRect);
             rightCrop = YCbCr.submat(rightRect);
-            middleCrop = YCbCr.submat(middleRect)
+            middleCrop = YCbCr.submat(middleRect);
 
             Core.extractChannel(leftCrop, leftCrop, 2);
             Core.extractChannel(rightCrop, rightCrop, 2);
@@ -86,7 +88,7 @@ public class OpenCV extends OpMode{
 
             Scalar leftavg = Core.mean(leftCrop);
             Scalar rightavg = Core.mean(rightCrop);
-            Slalar middleavg = Core.mean(middleCrop);
+            Scalar middleavg = Core.mean(middleCrop);
 
             leftavgfin = leftavg.val[0];
             rightavgfin = rightavg.val[0];

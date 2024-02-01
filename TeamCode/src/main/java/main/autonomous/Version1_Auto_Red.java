@@ -104,7 +104,7 @@ public class Version1_Auto_Red extends OpMode {
         });
     }
 
-    
+
     @Override //will any of this work?!
     public void loop(){
         MOTOR1  = hardwareMap.get(DcMotor.class, "MOTOR1");
@@ -129,7 +129,9 @@ public class Version1_Auto_Red extends OpMode {
         Mat YCbCr = new Mat();
         Mat leftCrop;
         Mat rightCrop;
+        Mat middleCrop;
         double leftavgfin;
+        double middleavgfin;
         double rightavgfin;
         Mat outPut = new Mat();
         Scalar rectColorRed = new Scalar(255.0,0.0,0.0);
@@ -153,10 +155,10 @@ public class Version1_Auto_Red extends OpMode {
                 Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
                 Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
             }
-            
+
             leftCrop = YCbCr.submat(leftRect);
             rightCrop = YCbCr.submat(rightRect);
-            middleCrop = YCbCr.submat(middleRect)
+            middleCrop = YCbCr.submat(middleRect);
 
             Core.extractChannel(leftCrop, leftCrop, 2);
             Core.extractChannel(rightCrop, rightCrop, 2);
@@ -164,7 +166,7 @@ public class Version1_Auto_Red extends OpMode {
 
             Scalar leftavg = Core.mean(leftCrop);
             Scalar rightavg = Core.mean(rightCrop);
-            Slalar middleavg = Core.mean(middleCrop);
+            Scalar middleavg = Core.mean(middleCrop);
 
             leftavgfin = leftavg.val[0];
             rightavgfin = rightavg.val[0];
@@ -172,14 +174,14 @@ public class Version1_Auto_Red extends OpMode {
 
 
             if(leftavgfin < rightavgfin && leftavgfin < middleavgfin){
-                telemetry.addLine("1");
+                //telemetry.addLine("1");
                 Version1_OpMode.propPosition = 1;
             }else if (leftavgfin > rightavgfin && leftavgfin > middleavgfin){
-                telemetry.addLine("3");
+               // telemetry.addLine("3");
                 Version1_OpMode.propPosition = 3;
             }else{
                 Version1_OpMode.propPosition = 2;
-                telemetry.addLine("2");
+                //telemetry.addLine("2");
             }
 
             return(outPut);
