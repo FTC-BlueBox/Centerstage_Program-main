@@ -35,7 +35,7 @@ public class OpenCV extends OpMode{
 
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             public void onOpened(){
-                webcam.startStreaming(1024,576, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
             }
             public void onError(int errorCode){
             }
@@ -63,23 +63,24 @@ public class OpenCV extends OpMode{
             Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
            // telemetry.addLine("pipeline running");
 
-            Rect leftRect = new Rect(1,1,340,575);
-            Rect middleRect = new Rect(340,1,340,575);
-            Rect rightRect = new Rect(680,1,340,575);
+            Rect leftRect = new Rect(1,1,210,480);
+            Rect middleRect = new Rect(210,1,210,480);
+            Rect rightRect = new Rect(420,1,210,480);
             //Rect leftRect = new Rect(1,1,510,575);
             //Rect rightRect = new Rect(510,1,1023,575);
 
 
             input.copyTo(outPut);
-            //if(Version1_OpMode.ALLIANCE_COLOR == "blue"){
-                //Imgproc.rectangle(outPut,leftRect,rectColorBlue,2);
-                //Imgproc.rectangle(outPut, rightRect, rectColorBlue, 2);
-                //Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
-           // } else if (Version1_OpMode.ALLIANCE_COLOR == "red"){
+            Version1_OpMode.ALLIANCE_COLOR = "red";
+            if(Version1_OpMode.ALLIANCE_COLOR == "blue"){
+                Imgproc.rectangle(outPut,leftRect,rectColorBlue,2);
+                Imgproc.rectangle(outPut, rightRect, rectColorBlue, 2);
+                Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
+            } else if (Version1_OpMode.ALLIANCE_COLOR == "red"){
                 Imgproc.rectangle(outPut,leftRect,rectColorRed,2);
                 Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
                 Imgproc.rectangle(outPut, middleRect, rectColorRed, 2);
-            //}
+            }
             
             leftCrop = YCbCr.submat(leftRect);
             rightCrop = YCbCr.submat(rightRect);
