@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.ThreeTrackingWheelLocalizer;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.util.Encoder;
@@ -25,14 +26,15 @@ import java.util.List;
  *    \--------------/
  *
  */
+@Disabled
 @Config
 public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
     public static double TICKS_PER_REV = 2000;
     public static double WHEEL_RADIUS = 0.945; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double LATERAL_DISTANCE = 10; // in; distance between the left and right wheels
-    public static double FORWARD_OFFSET = -7; // in; offset of the lateral wheel
+    public static double LATERAL_DISTANCE = 10.22; // in; distance between the left and right wheels
+    public static double FORWARD_OFFSET = 8.8; // in; offset of the lateral wheel
 
 
     private Encoder leftEncoder, rightEncoder, frontEncoder;
@@ -58,7 +60,11 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
 
 
         // Done: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
-        //rightEncoder.setDirection(Encoder.Direction.REVERSE);
+        rightEncoder.setDirection(Encoder.Direction.REVERSE);
+        //leftEncoder.setDirection(Encoder.Direction.REVERSE);//
+        //frontEncoder.setDirection(Encoder.Direction.REVERSE);
+
+
 
     }
 

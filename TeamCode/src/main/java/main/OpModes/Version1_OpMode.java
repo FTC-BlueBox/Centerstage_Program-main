@@ -67,12 +67,12 @@
             public void runOpMode() {
 
                 double MotorPower = 0.0;
-                double reduceSpeedFactor = 0.4;                          // reduce motor power
-                double intakeMotorPower = -0.8;
+                double reduceSpeedFactor = 0.8;                          // reduce motor power
+                double intakeMotorPower = -1;
                 int intakeStatus = 1;                                    //check if intake is running (binary)
 
                 int linearRackHomePos = 0;
-                int linearRackHighPos = 3000;
+                int linearRackHighPos = 3500;
                 int linearRackTarget = linearRackHomePos;
                 int linearRackLiftPos = 2700;
                 double holderHomePos = 0.14;
@@ -147,10 +147,10 @@
                 if (opModeIsActive()) {
 
                     // Turn on encoders
-                    MOTOR1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    MOTOR2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    MOTOR3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    MOTOR4.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    MOTOR1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    MOTOR2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    MOTOR3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    MOTOR4.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -182,10 +182,10 @@
                         {
                             MotorPower = gamepad1.left_stick_x * reduceSpeedFactor;
 
-                            MOTOR1.setPower(MotorPower);
-                            MOTOR2.setPower(MotorPower);
-                            MOTOR3.setPower(-MotorPower);
-                            MOTOR4.setPower(-MotorPower);
+                            MOTOR1.setPower(-MotorPower);
+                            MOTOR2.setPower(-MotorPower);
+                            MOTOR3.setPower(MotorPower);
+                            MOTOR4.setPower(MotorPower);
 
                         }
                         else {
@@ -394,6 +394,8 @@
                             CLAMP2.setPosition(clamp2ClosePos);
                             clamp2Pos = clamp2ClosePos;
                         }else{
+
+
                             CLAMP2.setPosition(clampOpenPos);
                             clamp2Pos = clampOpenPos;
                         }

@@ -21,6 +21,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -54,10 +55,10 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0, 0);//
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1;
+    public static double LATERAL_MULTIPLIER = 1.61;//double check
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
@@ -99,11 +100,11 @@ public class SampleMecanumDrive extends MecanumDrive {
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);*/
 
-        //CHECK!!
-        leftFront = hardwareMap.get(DcMotorEx.class, "MOTOR1");
+        //intake is the back
+        rightFront = hardwareMap.get(DcMotorEx.class, "MOTOR3"); //according to turn test these are flipped
+        rightRear = hardwareMap.get(DcMotorEx.class, "MOTOR1");
         leftRear = hardwareMap.get(DcMotorEx.class, "MOTOR2");
-        rightRear = hardwareMap.get(DcMotorEx.class, "MOTOR3");
-        rightFront = hardwareMap.get(DcMotorEx.class, "MOTOR4");
+        leftFront = hardwareMap.get(DcMotorEx.class, "MOTOR4");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -123,9 +124,9 @@ public class SampleMecanumDrive extends MecanumDrive {
             setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
         }
 
-        // TODO: reverse any motors using DcMotor.setDirection()
-        //rightFront.setDirection(DcMotorSimple.Direction.REVERSE); // CHECK!!
-        //rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        // Done: reverse any motors using DcMotor.setDirection()
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
@@ -277,7 +278,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         List<Double> wheelVelocities = new ArrayList<>();
         for (DcMotorEx motor : motors) {
-            int vel = (int) motor.getVelocity();
+            int vel = (int) motor.getVelocity() * -1;
             lastEncVels.add(vel);
             wheelVelocities.add(encoderTicksToInches(vel));
         }
