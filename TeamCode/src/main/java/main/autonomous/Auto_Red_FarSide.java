@@ -29,13 +29,16 @@
 
 package main.autonomous;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import main.OpModes.Version1_OpMode;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 /*
  * This OpMode illustrates the concept of driving a path based on time.
@@ -57,43 +60,37 @@ import main.OpModes.Version1_OpMode;
  */
 
 @Autonomous(name="auto 1", group="Robot")
-public class Version1_Auto_Red extends LinearOpMode {
-    private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
-    /* Declare OpMode members. */
-    private ElapsedTime runtime = new ElapsedTime();
-    double MotorPower = 0.4;
+public class Auto_Red_FarSide extends LinearOpMode {
 
-    static final double     FORWARD_SPEED = 0.6;
-    static final double     TURN_SPEED    = 0.5;
-
+    private Servo AUTOHOLDER;
     @Override
     public void runOpMode() {
 
-        // Initialize the drive system variables.=
-        MOTOR1  = hardwareMap.get(DcMotor.class, "MOTOR1");
-        MOTOR2 = hardwareMap.get(DcMotor.class, "MOTOR2");
-        MOTOR3  = hardwareMap.get(DcMotor.class, "MOTOR3");
-        MOTOR4 = hardwareMap.get(DcMotor.class, "MOTOR4");
+        AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
+
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        Pose2d startPose = new Pose2d(-33, -62, Math.toRadians(90)); //starts bot at x - 10 y - -8 heading 90 degrees
+        drive.setPoseEstimate(startPose);
 
         // Send telemetry message to signify robot waiting;
-        telemetry.addData("linear rack faces backdrop", "Ready to run");    //
+        telemetry.addData("Text", "Ready to run");    //
         telemetry.update();
 
-        // Wait for the game to start (driver presses PLAY)
+
         waitForStart();
 
+        TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
+                .forward(28)
 
-        // Step 1:  Drive forward for 3 seconds
-        MOTOR1.setPower(-MotorPower);
-        MOTOR2.setPower(MotorPower);
-        MOTOR3.setPower(-MotorPower);
-        MOTOR4.setPower(MotorPower);
-        sleep(2000);
-        MOTOR1.setPower(0);
-        MOTOR2.setPower(0);
-        MOTOR3.setPower(0);
-        MOTOR4.setPower(0);
-
+                .waitSeconds(1.5)
+                .back(2)
+                .strafeRight(30)
+                .splineTo(new Vector2d(45, -34), Math.toRadians(90))
+                .waitSeconds(5)
+                .strafeRight(20)
+                .back(10)
+                .build();
 
     }
 }

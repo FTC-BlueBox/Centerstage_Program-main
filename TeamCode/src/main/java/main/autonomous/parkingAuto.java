@@ -29,17 +29,10 @@
 
 package main.autonomous;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
-import main.OpModes.Version1_OpMode;
 
 /*
  * This OpMode illustrates the concept of driving a path based on time.
@@ -60,8 +53,8 @@ import main.OpModes.Version1_OpMode;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="auto 2", group="Robot")
-public class Version2_Auto_Red extends LinearOpMode {
+@Autonomous(name="auto 1", group="Robot")
+public class parkingAuto extends LinearOpMode {
     private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -73,14 +66,11 @@ public class Version2_Auto_Red extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-        Pose2d startPose = new Pose2d(10,-8, Math.toRadians(90)); //starts bot at x - 10 y - -8 heading 90 degrees
-
-        Trajectory myTrajectory = drive.trajectoryBuilder(new Pose2d())
-                .strafeRight(10) //in inches
-                .forward(5)
-                .build(); //pose is the middle of the field
+        // Initialize the drive system variables.=
+        MOTOR1  = hardwareMap.get(DcMotor.class, "MOTOR1");
+        MOTOR2 = hardwareMap.get(DcMotor.class, "MOTOR2");
+        MOTOR3  = hardwareMap.get(DcMotor.class, "MOTOR3");
+        MOTOR4 = hardwareMap.get(DcMotor.class, "MOTOR4");
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("linear rack faces backdrop", "Ready to run");    //
@@ -89,12 +79,17 @@ public class Version2_Auto_Red extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        if(isStopRequested()) return;
-        drive.followTrajectory(myTrajectory);
-
 
         // Step 1:  Drive forward for 3 seconds
-
+        MOTOR1.setPower(-MotorPower);
+        MOTOR2.setPower(MotorPower);
+        MOTOR3.setPower(-MotorPower);
+        MOTOR4.setPower(MotorPower);
+        sleep(2000);
+        MOTOR1.setPower(0);
+        MOTOR2.setPower(0);
+        MOTOR3.setPower(0);
+        MOTOR4.setPower(0);
 
 
     }
