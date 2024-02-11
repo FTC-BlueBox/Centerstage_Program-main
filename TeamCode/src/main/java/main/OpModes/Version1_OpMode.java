@@ -67,7 +67,7 @@
             public void runOpMode() {
 
                 double MotorPower = 0.0;
-                double reduceSpeedFactor = 0.8;                          // reduce motor power
+                double reduceSpeedFactor = 1;                          // reduce motor power
                 double intakeMotorPower = -1;
                 int intakeStatus = 1;                                    //check if intake is running (binary)
 
@@ -76,12 +76,12 @@
                 int linearRackTarget = linearRackHomePos;
                 int linearRackLiftPos = 2700;
                 double holderHomePos = 0.14;
-                double holderFlippedPos = 0.5;
+                double holderFlippedPos = 0.52;
                 double holderPos = holderHomePos;
                 double planeLaunchPos = 0.2;
                 double planeHoldPos = 0.6;
                 double planePos = planeHoldPos;
-                double clamp1ClosePos = 1;
+                double clamp1ClosePos = 0.8;
                 double clamp2ClosePos = 0.9;
                 double clampOpenPos = 0.0;
                 double clamp1Pos = clampOpenPos;
@@ -410,11 +410,22 @@
                         PLANE_LAUNCH.setPosition(planePos);
                         sleep(200);
                     }
+                    if(gamepad2.right_trigger >= 0.5){                                      //Turn on intake
+                            if(intakeStatus == 1){
+                                MOTOR_INTAKE.setPower(0.0);
+                                intakeStatus = 0;
+                            }else{
+                                MOTOR_INTAKE.setPower(-intakeMotorPower);
+                                intakeStatus = 1;
+                            }
+                            sleep(200);
+
+                    }
 
 
-                    //Logic
-                    if(linearRackTarget == linearRackHomePos && clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos){
-                        HOLDER_ROTATE.setPosition(holderPos - 0.03);             //lift intake when driving
+                    //Logic linearRackTarget == linearRackHomePos &&
+                    if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos){
+                        HOLDER_ROTATE.setPosition(holderPos - 0.06);             //lift intake when driving
                     }
 
                     telemetry.update();

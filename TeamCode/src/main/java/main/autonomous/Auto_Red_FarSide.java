@@ -107,16 +107,11 @@
  
  
              input.copyTo(outPut);
-             Version1_OpMode.ALLIANCE_COLOR = "blue"; //fix this, then add ifs
-             if(Version1_OpMode.ALLIANCE_COLOR == "blue"){
-                 Imgproc.rectangle(outPut,leftRect,rectColorBlue,2);
-                 Imgproc.rectangle(outPut, rightRect, rectColorBlue, 2);
-                 Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
-             } else if (Version1_OpMode.ALLIANCE_COLOR == "red"){
+             Version1_OpMode.ALLIANCE_COLOR = "red"; //fix this, then add ifs
                  Imgproc.rectangle(outPut,leftRect,rectColorRed,2);
                  Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
                  Imgproc.rectangle(outPut, middleRect, rectColorRed, 2);
-             }
+
  
              leftCrop = YCbCr.submat(leftRect);
              rightCrop = YCbCr.submat(rightRect);
@@ -204,11 +199,12 @@
  
          SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
  
-         Pose2d startPose = new Pose2d(-33, -62, Math.toRadians(90)); //starts bot at x - 10 y - -8 heading 90 degrees
+         Pose2d startPose = new Pose2d(-34, -62, Math.toRadians(90)); //starts bot at x - 10 y - -8 heading 90 degrees
          drive.setPoseEstimate(startPose);
  
          // Send telemetry message to signify robot waiting;
-         telemetry.addData("Text", "Ready to run");    //
+         telemetry.addData("Status: ", "Ready to run");    //
+         telemetry.addData("Position: ", Version1_OpMode.propPosition);
          telemetry.update();
  
  
@@ -216,15 +212,17 @@
  
          //when team prop is in the middle
          TrajectorySequence position2 = drive.trajectorySequenceBuilder(startPose)
-                 .forward(28)
+                 .forward(30)
                  .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
                      AUTOHOLDER.setPosition(autoHolderReleasePos);
                  })
-                 .waitSeconds(5)
+                 .waitSeconds(2)
                  .back(2)
-                 .strafeRight(30)
-                 .splineTo(new Vector2d(45, -34), Math.toRadians(0))
-                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
+                 .turn(Math.toRadians(-90))   //fix for 90
+                 .waitSeconds(3)
+                 .forward(30)
+
+                 /*.UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
                      liftLinearRack();
                  })
                  .UNSTABLE_addTemporalMarkerOffset(2, () -> {
@@ -241,7 +239,7 @@
                  })
                  .waitSeconds(6)
                  .strafeLeft(23)
-                 .forward(10)
+                 .forward(10)*/
                  .build();
  
          //when team prop is on the right
@@ -282,7 +280,7 @@
                      AUTOHOLDER.setPosition(autoHolderReleasePos);
                  })
                  .waitSeconds(5)
-                 .lineToLinearHeading(new Pose2d(45, -34, Math.toRadians(0)))
+                 .lineToLinearHeading(new Pose2d(40, -34, Math.toRadians(0)))
                  .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
                      liftLinearRack();
                  })
@@ -305,7 +303,15 @@
  
          waitForStart();
          if (!isStopRequested())
+             if (Version1_OpMode.propPosition == 1) {
+                 drive.followTrajectorySequence(position2);
+             }
+        else if (Version1_OpMode.propPosition == 3) {
+             drive.followTrajectorySequence(position3);
+         }else {
              drive.followTrajectorySequence(position2);
+         }
+
      }
  
          public void liftLinearRack(){
