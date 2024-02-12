@@ -27,324 +27,432 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- package main.autonomous;
+package main.autonomous;
 
- import com.acmerobotics.roadrunner.geometry.Pose2d;
- import com.acmerobotics.roadrunner.geometry.Vector2d;
- import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
- import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
- import com.qualcomm.robotcore.hardware.DcMotor;
- import com.qualcomm.robotcore.hardware.Servo;
- import com.qualcomm.robotcore.util.ElapsedTime;
- 
- import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
- import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
- import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
- import org.firstinspires.ftc.teamcode.util.OpenCV;
- import org.opencv.core.Core;
- import org.opencv.core.Mat;
- import org.opencv.core.Rect;
- import org.opencv.core.Scalar;
- import org.opencv.imgproc.Imgproc;
- import org.openftc.easyopencv.OpenCvCamera;
- import org.openftc.easyopencv.OpenCvCameraFactory;
- import org.openftc.easyopencv.OpenCvCameraRotation;
- import org.openftc.easyopencv.OpenCvPipeline;
- import org.openftc.easyopencv.OpenCvWebcam;
- 
- import main.OpModes.Version1_OpMode;
- 
- /*
-  * This OpMode illustrates the concept of driving a path based on time.
-  * The code is structured as a LinearOpMode
-  *
-  * The code assumes that you do NOT have encoders on the wheels,
-  *   otherwise you would use: RobotAutoDriveByEncoder;
-  *
-  *   The desired path in this example is:
-  *   - Drive forward for 3 seconds
-  *   - Spin right for 1.3 seconds
-  *   - Drive Backward for 1 Second
-  *
-  *  The code is written in a simple form with no optimizations.
-  *  However, there are several ways that this type of sequence could be streamlined,
-  *
-  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
-  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
-  */
- 
- @Autonomous(name="Auto_Red_FarSide", group="Robot")
- public class Auto_Red_FarSide extends LinearOpMode {
- 
-     private Servo AUTOHOLDER, CLAMP1,CLAMP2, HOLDER_ROTATE;
-     private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK;
-     int linearRackHighPos = 3500;
-     int linearRackHomePos = 0;
- 
-     OpenCvWebcam webcam = null;
- 
- 
-     public class examplePipeline extends OpenCvPipeline {
-         Mat YCbCr = new Mat();
-         Mat leftCrop;
-         Mat rightCrop;
-         Mat middleCrop;
-         double leftavgfin;
-         double rightavgfin;
-         double middleavgfin;
-         Mat outPut = new Mat();
-         Scalar rectColorRed = new Scalar(255.0,0.0,0.0);
-         Scalar rectColorBlue = new Scalar(0.0,0.0,255.0);
-         public Mat processFrame(Mat input){
-             Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
-             // telemetry.addLine("pipeline running");
- 
-             Rect leftRect = new Rect(1,1,210,479);
-             Rect middleRect = new Rect(210,1,210,479);
-             Rect rightRect = new Rect(420,1,210,479);
-             //Rect leftRect = new Rect(1,1,510,575);
-             //Rect rightRect = new Rect(510,1,1023,575);
- 
- 
-             input.copyTo(outPut);
-             Version1_OpMode.ALLIANCE_COLOR = "red"; //fix this, then add ifs
-                 Imgproc.rectangle(outPut,leftRect,rectColorRed,2);
-                 Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
-                 Imgproc.rectangle(outPut, middleRect, rectColorRed, 2);
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
- 
-             leftCrop = YCbCr.submat(leftRect);
-             rightCrop = YCbCr.submat(rightRect);
-             middleCrop = YCbCr.submat(middleRect);
- 
-             Core.extractChannel(leftCrop, leftCrop, 2);
-             Core.extractChannel(rightCrop, rightCrop, 2);
-             Core.extractChannel(middleCrop, middleCrop,2);
- 
-             Scalar leftavg = Core.mean(leftCrop);
-             Scalar rightavg = Core.mean(rightCrop);
-             Scalar middleavg = Core.mean(middleCrop);
- 
-             leftavgfin = leftavg.val[0];
-             rightavgfin = rightavg.val[0];
-             middleavgfin = middleavg.val[0];
- 
-             telemetry.addData("right",rightavgfin);
-             telemetry.addData("left",leftavgfin);
-             telemetry.addData("middle",middleavgfin);
- 
-             if(leftavgfin > rightavgfin && leftavgfin > middleavgfin){
-                 telemetry.addLine("1");
-                 Version1_OpMode.propPosition = 1;
-             }else if (leftavgfin < rightavgfin && rightavgfin > middleavgfin){
-                 telemetry.addLine("3");
-                 Version1_OpMode.propPosition = 3;
-             }else{
-                 Version1_OpMode.propPosition = 2;
-                 telemetry.addLine("2");
-             }
- 
-             return(outPut);
-         }
- 
-     }
- 
-     @Override
-     public void runOpMode() {
-         //creating webcam
-         WebcamName webcamName = hardwareMap.get(WebcamName.class,"webcam");
-         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
- 
-         webcam.setPipeline(new examplePipeline());
-             webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                 public void onOpened(){
-                     webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
-                 }
-                 public void onError(int errorCode){
-                 }
-             });
- 
- 
- 
-         double holderHomePos = 0.14;
-         double holderFlippedPos = 0.5;
-         double holderPos = holderHomePos;
-         double clamp1ClosePos = 1;
-         double clamp2ClosePos = 0.9;
-         double clampOpenPos = 0.0;
-         double clamp1Pos = clamp1ClosePos;
-         double clamp2Pos = clampOpenPos;
-         double autoHolderHoldPos = 0.0;
-         double autoHolderReleasePos = 0.4;
- 
-         AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
-         MOTOR_LEFT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-LEFT-LINEARRACK");
-         MOTOR_RIGHT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-RIGHT-LINEARRACK");
-         CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
-         CLAMP2 = hardwareMap.get(Servo.class, "CLAMP2");
-         HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
- 
-         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
- 
-         MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-         MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
- 
- 
-         HOLDER_ROTATE.setPosition(holderPos);   //main arm flip
-         CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
-         CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
-         AUTOHOLDER.setPosition(autoHolderHoldPos - 0.03);
- 
-         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
- 
-         Pose2d startPose = new Pose2d(-34, -62, Math.toRadians(90)); //starts bot at x - 10 y - -8 heading 90 degrees
-         drive.setPoseEstimate(startPose);
- 
-         // Send telemetry message to signify robot waiting;
-         telemetry.addData("Status: ", "Ready to run");    //
-         telemetry.addData("Position: ", Version1_OpMode.propPosition);
-         telemetry.update();
- 
- 
-         //!!APRIL TAGS!!!!
- 
-         //when team prop is in the middle
-         TrajectorySequence position2 = drive.trajectorySequenceBuilder(startPose)
-                 .forward(30)
-                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     AUTOHOLDER.setPosition(autoHolderReleasePos);
-                 })
-                 .waitSeconds(2)
-                 .back(2)
-                 .turn(Math.toRadians(-90))   //fix for 90
-                 .waitSeconds(3)
-                 .forward(30)
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.util.OpenCV;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
 
-                 /*.UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     liftLinearRack();
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(2, () -> {
-                     HOLDER_ROTATE.setPosition(holderFlippedPos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(3, () -> {
-                     CLAMP1.setPosition(clampOpenPos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(3.5, () -> {
-                     HOLDER_ROTATE.setPosition(holderHomePos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(4, () -> {
-                     bringHomeLinearRack();
-                 })
-                 .waitSeconds(6)
-                 .strafeLeft(23)
-                 .forward(10)*/
-                 .build();
- 
-         //when team prop is on the right
-         TrajectorySequence position3 = drive.trajectorySequenceBuilder(startPose)
-                 .forward(28)
-                 .turn(Math.toRadians(-90))
-                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     AUTOHOLDER.setPosition(autoHolderReleasePos);
-                 })
-                 .waitSeconds(5)
-                 .forward(80)
-                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     liftLinearRack();
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(2, () -> {
-                     HOLDER_ROTATE.setPosition(holderFlippedPos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(3, () -> {
-                     CLAMP1.setPosition(clampOpenPos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(3.5, () -> {
-                     HOLDER_ROTATE.setPosition(holderHomePos - 0.03);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(4, () -> {
-                     bringHomeLinearRack();
-                 })
-                 .waitSeconds(6)
-                 .strafeLeft(23)
-                 .forward(10)
-                 .build();
- 
-         //when team prop is on the left
-         TrajectorySequence position1 = drive.trajectorySequenceBuilder(startPose)
-                 .strafeLeft(3)
-                 .forward(28)
-                 .turn(Math.toRadians(90))
-                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     AUTOHOLDER.setPosition(autoHolderReleasePos);
-                 })
-                 .waitSeconds(5)
-                 .lineToLinearHeading(new Pose2d(40, -34, Math.toRadians(0)))
-                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     liftLinearRack();
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(2, () -> {
-                     HOLDER_ROTATE.setPosition(holderFlippedPos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(3, () -> {
-                     CLAMP1.setPosition(clampOpenPos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(3.5, () -> {
-                     HOLDER_ROTATE.setPosition(holderHomePos);
-                 })
-                 .UNSTABLE_addTemporalMarkerOffset(4, () -> {
-                     bringHomeLinearRack();
-                 })
-                 .waitSeconds(6)
-                 .strafeLeft(23)
-                 .forward(10)
-                 .build();
- 
-         waitForStart();
-         if (!isStopRequested())
-             if (Version1_OpMode.propPosition == 1) {
-                 drive.followTrajectorySequence(position2);
-             }
-        else if (Version1_OpMode.propPosition == 3) {
-             drive.followTrajectorySequence(position3);
-         }else {
-             drive.followTrajectorySequence(position2);
-         }
+import main.OpModes.Version1_OpMode;
 
-     }
- 
-         public void liftLinearRack(){
-             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
-             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
- 
-             MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-             MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-             MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
- 
-             if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-             else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
- 
-             if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-             else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
- 
-         }
-         public void bringHomeLinearRack(){
-             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
-             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
- 
-             MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-             MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-             MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
- 
-             if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-             else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
- 
-             if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-             else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
- 
-         }
- 
- }
+@Autonomous(name="Auto_Red_FarSide", group="Robot")
+public class Auto_Red_FarSide extends LinearOpMode {
+
+    // Initialize Variables
+    private Servo AUTOHOLDER, CLAMP1, CLAMP2, HOLDER_ROTATE;
+    private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK;
+    int linearRackHighPos = 2900;
+    int linearRackHomePos = 0;
+    double leftavgfin;
+    double rightavgfin;
+    double middleavgfin;
+    OpenCvWebcam webcam = null;
+
+    @Override
+    public void runOpMode() {
+
+        double holderHomePos = 0.14;
+        double holderFlippedPos = 0.5;
+        double holderPos = holderHomePos;
+        double clamp1ClosePos = 0.8;
+        double clamp2ClosePos = 0.9;
+        double clampOpenPos = 0.0;
+        double clamp1Pos = clamp1ClosePos;
+        double clamp2Pos = clampOpenPos;
+        double autoHolderHoldPos = 0.0;
+        double autoHolderReleasePos = 0.4;
+
+        // Hardware map all necessary motors and servos
+        AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
+        MOTOR_LEFT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-LEFT-LINEARRACK");
+        MOTOR_RIGHT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-RIGHT-LINEARRACK");
+        CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
+        CLAMP2 = hardwareMap.get(Servo.class, "CLAMP2");
+        HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
+
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //Set servos to initialized positions
+        HOLDER_ROTATE.setPosition(holderPos);   //main arm flip
+        CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
+        CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
+        AUTOHOLDER.setPosition(autoHolderHoldPos - 0.03);
+
+        //Create webcam
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
+
+        examplePipeline pipeline = new examplePipeline();
+        webcam.setPipeline(pipeline);
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {                                                           //open camera
+                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+            }
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        Pose2d startPose = new Pose2d(-34, -62, Math.toRadians(90));                       // Starting Position 12,-62 heading 90 degrees
+        drive.setPoseEstimate(startPose);
+
+        // Team prop is on the left
+        TrajectorySequence position1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for left prop position.forward(30)
+                .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
+                .forward(4)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
+                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                })
+                .waitSeconds(2)
+                .back(4)
+                .strafeRight(20)
+                .splineTo(new Vector2d(45, -16), Math.toRadians(-90))                    // Move to side of backdrop (avoiding other team)
+                .waitSeconds(6)
+                .lineToLinearHeading(new Pose2d(50, -30, Math.toRadians(0)))              // Move in front of backdrop
+                .UNSTABLE_addTemporalMarkerOffset(0, () -> {                              // Reset linear rack encoders
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(0.4, () -> {                            // Bring up left linear rack
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+                    MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    else MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(0.4, () -> {                            // Bring up right linear rack
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+
+                    MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    else MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(3, () -> {                               // Flip intake box servo up
+                    HOLDER_ROTATE.setPosition(holderFlippedPos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(3.5, () -> {                             // Open front clamp
+                    CLAMP1.setPosition(clampOpenPos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(4, () -> {                               // Bring intake box home
+                    HOLDER_ROTATE.setPosition(holderHomePos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(5, () -> {                               // Bring down right linear rack
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+                    MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    else MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(5, () -> {                               // Bring down left linear rack
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+
+                    MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    else MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                })
+                .waitSeconds(8)
+                .strafeLeft(20)                                                        // Drive into park zone
+                .forward(10)
+                .build();
+
+        // Team prop is in the middle
+        TrajectorySequence position2 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for middle prop position
+                .forward(30)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
+                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                })
+                .waitSeconds(2)
+                .back(4)
+                .strafeLeft(20)                                                        // Avoid other team
+                .forward(20)
+                .splineTo(new Vector2d(40, -20), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
+                .waitSeconds(6)
+                .lineToLinearHeading(new Pose2d(50, -35, Math.toRadians(0)))              // Move to the front of the backdrop
+                .UNSTABLE_addTemporalMarkerOffset(0, () -> {                              //Reset linear rack encoders
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(0.4, () -> {                            // Bring up right linear rack
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+                    MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    else MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(0.4, () -> {                            // Bring up left linear rack
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+
+                    MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    else MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(3, () -> {                               // Flip intake box
+                    HOLDER_ROTATE.setPosition(holderFlippedPos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(3.5, () -> {                             // Open clamp1
+                    CLAMP1.setPosition(clampOpenPos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(4, () -> {                               // Flip intake box home
+                    HOLDER_ROTATE.setPosition(holderHomePos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(5, () -> {                               // Bring down right linear rack
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+                    MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    else MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(5, () -> {                           // Bring down left linear rack
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+
+                    MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    else MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                })
+                .waitSeconds(8)                                                             //Drive into the parking zone
+                .strafeLeft(23)
+                .forward(10)
+                .build();
+
+        // Team prop on the right
+        TrajectorySequence position3 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for right prop position
+                .forward(30)                                                         // Drive to prop and deposit pixel
+                .turn(Math.toRadians(-90))
+                .forward(4)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
+                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                })
+                .waitSeconds(2)
+                .back(4)
+                .strafeLeft(20)
+                .splineToConstantHeading(new Vector2d(45, -16), Math.toRadians(90))    // Drive next to backdrop and wait (for other team)
+                .waitSeconds(6)
+                .lineToLinearHeading(new Pose2d(50, -40, Math.toRadians(0)))           // Drive in front of backdrop
+                .UNSTABLE_addTemporalMarkerOffset(0, () -> {                           // Reset linear rack encoders
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(0.4, () -> {                         // Lift right linear rack
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+                    MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    else MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(0.4, () -> {                         // Lift left linear rack
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+
+                    MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    else MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(3, () -> {                           // Flip intake box
+                    HOLDER_ROTATE.setPosition(holderFlippedPos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(3.5, () -> {                         // Open clamp1
+                    CLAMP1.setPosition(clampOpenPos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(4, () -> {                           // Flip intake box home
+                    HOLDER_ROTATE.setPosition(holderHomePos);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(5, () -> {                           // Bring down right linear rack
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+                    MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    else MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(5, () -> {                         // Bring down left linear rack
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+
+                    MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    else MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                })
+                .waitSeconds(8)
+                .strafeLeft(28)                                                   // Drive into parking zone
+                .forward(10)
+                .build();
+
+
+        while (!isStopRequested() && !isStarted()) {
+            pipeline.returnPosition();                                                     // Continuously update the prop position during init()
+        }
+
+        // Send telemetry message to signify robot waiting;
+        telemetry.addData("Status: ", "Ready to run");                       // Update telemetry information
+        telemetry.addData("Prop Position: ", Version1_OpMode.getPropPosition());
+        telemetry.update();
+        sleep(500);
+
+        waitForStart();
+
+        if (!isStopRequested())                                                            // When program starts, run appropriate trajectory
+            if (Version1_OpMode.getPropPosition() == 1) {
+                drive.followTrajectorySequence(position1);
+            }
+            else if (Version1_OpMode.getPropPosition() == 3) {
+                drive.followTrajectorySequence(position3);
+            }else {
+                drive.followTrajectorySequence(position2);
+            }
+    }
+
+    public void liftLinearRack(){                                                          // Method to lift linear rack
+        MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+        MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
+        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+    }
+    public void bringHomeLinearRack(){                                                    // Method to bring down linear rack
+        MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+        MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
+        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+    }
+    public class examplePipeline extends OpenCvPipeline {                                 // Create pipeline for opencv camera
+        Mat YCbCr = new Mat();
+        Mat leftCrop;
+        Mat rightCrop;
+        Mat middleCrop;
+
+        Mat outPut = new Mat();
+        Scalar rectColorRed = new Scalar(255.0,0.0,0.0);
+        public Mat processFrame(Mat input){
+            Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
+
+            //Change slightly?
+            Rect leftRect = new Rect(1,1,210,479);
+            Rect middleRect = new Rect(210,1,210,479);
+            Rect rightRect = new Rect(420,1,210,479);
+
+
+            input.copyTo(outPut);
+            Imgproc.rectangle(outPut,leftRect,rectColorRed,2);                    // Check for red values
+            Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
+            Imgproc.rectangle(outPut, middleRect, rectColorRed, 2);
+
+            leftCrop = YCbCr.submat(leftRect);
+            rightCrop = YCbCr.submat(rightRect);
+            middleCrop = YCbCr.submat(middleRect);
+
+            Core.extractChannel(leftCrop, leftCrop, 2);                               // Split up screen
+            Core.extractChannel(rightCrop, rightCrop, 2);
+            Core.extractChannel(middleCrop, middleCrop,2);
+
+            Scalar leftavg = Core.mean(leftCrop);
+            Scalar rightavg = Core.mean(rightCrop);
+            Scalar middleavg = Core.mean(middleCrop);
+
+            leftavgfin = leftavg.val[0];                                                  // Average color values
+            rightavgfin = rightavg.val[0];
+            middleavgfin = middleavg.val[0];
+
+            /*telemetry.addData("right",rightavgfin);
+            telemetry.addData("left",leftavgfin);
+            telemetry.addData("middle",middleavgfin);*/
+
+            return(outPut);
+        }
+        public int returnPosition(){                                                     // Set prop position according to averages
+            if (leftavgfin > rightavgfin && leftavgfin > middleavgfin) {
+                Version1_OpMode.setPropPosition(1);
+            } else if (leftavgfin < rightavgfin && rightavgfin > middleavgfin) {
+                Version1_OpMode.setPropPosition(3);
+            } else {
+                Version1_OpMode.setPropPosition(2);
+            } return Version1_OpMode.getPropPosition();
+        }
+
+    }
+
+}

@@ -8,26 +8,25 @@ import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
-        MeepMeep meepMeep = new MeepMeep(800);
+        MeepMeep meepMeep = new MeepMeep(700);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(12, -62, Math.toRadians(90)))
+                        drive.trajectorySequenceBuilder(new Pose2d(-34, -62, Math.toRadians(90)))
                                 .forward(30)
+                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
+                                    //AUTOHOLDER.setPosition(autoHolderReleasePos);
+                                })
                                 .waitSeconds(2)
-                                .back(6)
-                                .turn(Math.toRadians(-90))   //fix for 90
-                                .waitSeconds(3)
-                                .lineToLinearHeading(new Pose2d(40, -35, Math.toRadians(0)))
-                                /*.turn(Math.toRadians(90))
-                                .forward(30)
-                                .turn(Math.toRadians(90))
-                                .forward(30)
-                                .turn(Math.toRadians(90))
-                                .forward(30)
-                                .turn(Math.toRadians(90))*/
+                                .back(4)
+                                .strafeLeft(20)
+                                .forward(20)
+                                .splineTo(new Vector2d(40, -20), Math.toRadians(0))
+                                // Move to backdrop and wait at the side (for other team)
+                                .waitSeconds(6)
+                                .lineToLinearHeading(new Pose2d(50, -35, Math.toRadians(0)))
                                 .build()
                 );
 

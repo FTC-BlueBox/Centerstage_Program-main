@@ -431,4 +431,10 @@
                     telemetry.update();
                 }
             }
+            public static void setPropPosition(int p){
+                propPosition = p;
+            }
+            public static int getPropPosition(){
+                return propPosition;
+            }
         }
