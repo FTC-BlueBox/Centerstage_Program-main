@@ -14,16 +14,16 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(12, 62, Math.toRadians(-90)))
-                                .strafeLeft(15)
-                                .forward(20)
-                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                        // Drive to and drop off pixel
+                        drive.trajectorySequenceBuilder(new Pose2d(12, -62, Math.toRadians(90)))
+                                .forward(30)
+                                .turn(Math.toRadians(90))
+                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
                                     //AUTOHOLDER.setPosition(autoHolderReleasePos);
                                 })
                                 .waitSeconds(1)
                                 .back(6)
-                                .turn(Math.toRadians(90))
-                                .lineToLinearHeading(new Pose2d(50, 40, 0))           // Drive to backdrop
+                                .turn(Math.toRadians(200))                                                      // Drive to backdrop
+                                .lineToLinearHeading(new Pose2d(52, -30, Math.toRadians(15)))  // Drive to backdrop
                                 .build()
                 );
 
