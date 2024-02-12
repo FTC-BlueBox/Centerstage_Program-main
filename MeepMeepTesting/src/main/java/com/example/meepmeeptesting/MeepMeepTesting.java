@@ -14,19 +14,16 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-34, -62, Math.toRadians(90)))
-                                .forward(30)
-                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
+                        drive.trajectorySequenceBuilder(new Pose2d(12, 62, Math.toRadians(-90)))
+                                .strafeLeft(15)
+                                .forward(20)
+                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                        // Drive to and drop off pixel
                                     //AUTOHOLDER.setPosition(autoHolderReleasePos);
                                 })
-                                .waitSeconds(2)
-                                .back(4)
-                                .strafeLeft(20)
-                                .forward(20)
-                                .splineTo(new Vector2d(40, -20), Math.toRadians(0))
-                                // Move to backdrop and wait at the side (for other team)
-                                .waitSeconds(6)
-                                .lineToLinearHeading(new Pose2d(50, -35, Math.toRadians(0)))
+                                .waitSeconds(1)
+                                .back(6)
+                                .turn(Math.toRadians(90))
+                                .lineToLinearHeading(new Pose2d(50, 40, 0))           // Drive to backdrop
                                 .build()
                 );
 

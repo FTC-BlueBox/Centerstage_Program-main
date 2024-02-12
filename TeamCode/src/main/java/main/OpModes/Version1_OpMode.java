@@ -236,7 +236,7 @@
                     //gamepad 1: LR is front, lifts LR + swing (semiauto), releases clamps, bring down all at once
 
                     //gamepad2
-                    if(gamepad1.y){                                  //Linear rack manual up and down movement
+                    if(gamepad1.y){                                                  //Linear rack manual up and down movement
                         if(linearRackTarget == linearRackHomePos){
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
@@ -260,7 +260,7 @@
 
                         sleep(1300);
                     }
-                    if(gamepad1.a){                                 //manually flip holder
+                    if(gamepad1.a){                                                      //manually flip holder
                         if(holderPos == holderHomePos){
                             holderPos = holderFlippedPos;
                         } else{
@@ -269,8 +269,8 @@
                         HOLDER_ROTATE.setPosition(holderPos);
                         sleep(200);
                     }
-                    if(gamepad1.right_bumper) {                      //semi-auto bring pixels up
-                        if(linearRackTarget == linearRackHomePos){  //first bring up linear rack
+                    if(gamepad1.right_bumper) {                                           //semi-auto bring pixels up
+                        if(linearRackTarget == linearRackHomePos){                        //first bring up linear rack
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
                             linearRackTarget = linearRackHighPos;
@@ -279,7 +279,7 @@
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                             linearRackTarget = linearRackHomePos;
-                            holderPos = holderHomePos;                //flip box before coming down
+                            holderPos = holderHomePos;                                     // Flip box before coming down
                             HOLDER_ROTATE.setPosition(holderPos);
                             sleep(200);
                         }
@@ -295,14 +295,14 @@
                         else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                         sleep(1500);
-                        if(linearRackTarget == linearRackHighPos){    //flip box at the top
+                        if(linearRackTarget == linearRackHighPos){                          // Flip box at the top
                             holderPos = holderFlippedPos;
                             HOLDER_ROTATE.setPosition(holderPos);
                             sleep(200);
                         }
 
                     }
-                    if(gamepad1.left_bumper){                         //Open both clamps
+                    if(gamepad1.left_bumper){                                               //Open both clamps
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
@@ -323,7 +323,7 @@
 
 
                     //gamepad 2
-                    if(gamepad2.a){                                      //Turn on intake
+                    if(gamepad2.a){                                                           //Turn on intake
                         if(linearRackTarget == linearRackHomePos && holderPos == holderHomePos){
                             if(intakeStatus == 1){
                                 MOTOR_INTAKE.setPower(0.0);
@@ -359,7 +359,7 @@
 
                         sleep(1300);
                     }
-                    if(gamepad2.b){                                  //close both clamps
+                    if(gamepad2.b){                                                         // Close both clamps
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
@@ -379,7 +379,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.right_bumper){                        //Open/Close clamp 1 (manual)
+                    if(gamepad2.right_bumper){                                             //Open/Close clamp 1 (manual)
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
@@ -389,7 +389,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.left_bumper){                            //Open/Close clamp 2 (manual)
+                    if(gamepad2.left_bumper){                                                //Open/Close clamp 2 (manual)
                         if (clamp2Pos == clampOpenPos) {
                             CLAMP2.setPosition(clamp2ClosePos);
                             clamp2Pos = clamp2ClosePos;
@@ -401,7 +401,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.x){                                    //Launch Plane
+                    if(gamepad2.x){                                                          //Launch Plane
                         if(planePos == planeHoldPos){
                             planePos = planeLaunchPos;
                         } else {
@@ -424,7 +424,7 @@
 
 
                     //Logic linearRackTarget == linearRackHomePos &&
-                    if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos){
+                    if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos && linearRackTarget == linearRackHomePos){
                         HOLDER_ROTATE.setPosition(holderPos - 0.06);             //lift intake when driving
                     }
 
