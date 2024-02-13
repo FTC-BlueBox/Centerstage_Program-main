@@ -128,7 +128,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         // Team prop is on the left
-        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for left prop position
+        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position
                 .forward(30)
                 .turn(Math.toRadians(90))
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
@@ -143,12 +143,12 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
                 .waitSeconds(2)
-                .strafeRight(30)                                                        // Drive into park zone
+                .strafeRight(30)                                                         // Drive into park zone
                 .forward(6)
                 .build();
 
         // Team prop is in the middle
-        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for middle prop position
+        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)              // Create trajectory for middle prop position
                 .forward(29)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                              // Drive forward and drop off pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
@@ -197,20 +197,21 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
         waitForStart();
 
-        if (!isStopRequested())
-            drive.followTrajectorySequence(position1_p1);
-           // deliverPixel();
-            drive.followTrajectorySequence(position1_p2);
-
-        // When program starts, run appropriate trajectory
-           /* if (Version1_OpMode.getPropPosition() == 1) {
-                drive.followTrajectorySequence(position1);
+        if (!isStopRequested())                                                            // When program starts, run appropriate trajectory
+            if (Version1_OpMode.getPropPosition() == 1) {
+                drive.followTrajectorySequence(position1_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position1_p2);
             }
             else if (Version1_OpMode.getPropPosition() == 3) {
-                drive.followTrajectorySequence(position3);
+                drive.followTrajectorySequence(position3_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position3_p2);
             }else {
-                drive.followTrajectorySequence(position2);
-            }*/
+                drive.followTrajectorySequence(position2_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position2_p2);
+            }
     }
 
     public void deliverPixel(){

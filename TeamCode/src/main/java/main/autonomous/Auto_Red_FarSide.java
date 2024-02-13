@@ -134,9 +134,9 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .waitSeconds(2)
                 .back(4)
                 .strafeRight(20)
-                .splineTo(new Vector2d(45, -16), Math.toRadians(-90))                    // Move to side of backdrop (avoiding other team)
+                .splineTo(new Vector2d(35, -10), Math.toRadians(-90))                    // Move to side of backdrop (avoiding other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, -30, Math.toRadians(0)))              // Move in front of backdrop
+                .lineToLinearHeading(new Pose2d(48, -15, Math.toRadians(0)))              // Move in front of backdrop
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
@@ -155,9 +155,9 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .back(4)
                 .strafeLeft(20)                                                        // Avoid other team
                 .forward(20)
-                .splineTo(new Vector2d(40, -20), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
+                .splineTo(new Vector2d(35, -10), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, -35, Math.toRadians(0)))              // Move to the front of the backdrop
+                .lineToLinearHeading(new Pose2d(50, -36, Math.toRadians(0)))              // Move to the front of the backdrop
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
@@ -177,7 +177,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .waitSeconds(2)
                 .back(4)
                 .strafeLeft(20)
-                .splineToConstantHeading(new Vector2d(45, -16), Math.toRadians(90))    // Drive next to backdrop and wait (for other team)
+                .splineToConstantHeading(new Vector2d(35, -10), Math.toRadians(90))    // Drive next to backdrop and wait (for other team)
                 .waitSeconds(6)
                 .lineToLinearHeading(new Pose2d(50, -40, Math.toRadians(0)))           // Drive in front of backdrop
                 .build();
@@ -202,18 +202,20 @@ public class Auto_Red_FarSide extends LinearOpMode {
         waitForStart();
 
         if (!isStopRequested())                                                            // When program starts, run appropriate trajectory
-        drive.followTrajectorySequence(position1_p1);
-        //deliverPixel();
-        drive.followTrajectorySequence(position1_p2);
-
-          /*  if (Version1_OpMode.getPropPosition() == 1) {
-                drive.followTrajectorySequence(position1);
+            if (Version1_OpMode.getPropPosition() == 1) {
+                drive.followTrajectorySequence(position1_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position1_p2);
             }
             else if (Version1_OpMode.getPropPosition() == 3) {
-                drive.followTrajectorySequence(position3);
+                drive.followTrajectorySequence(position3_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position3_p2);
             }else {
-                drive.followTrajectorySequence(position2);
-            }*/
+                drive.followTrajectorySequence(position2_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position2_p2);
+            }
     }
 
     public void deliverPixel(){
