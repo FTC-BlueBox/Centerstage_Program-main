@@ -34,6 +34,7 @@
         import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
         import com.qualcomm.robotcore.hardware.DcMotor;
+        import com.qualcomm.robotcore.hardware.DigitalChannel;
         import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.util.ElapsedTime;
         import com.qualcomm.robotcore.util.Range;
@@ -61,6 +62,7 @@
             private Servo HOLDER_ROTATE, CLAMP1, PLANE_LAUNCH, CLAMP2, AUTOHOLDER;
             public static String ALLIANCE_COLOR = "";
             public static int propPosition;
+            private DigitalChannel LED;
 
 
             @Override
@@ -98,6 +100,9 @@
                 MOTOR_LEFT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-LEFT-LINEARRACK");
                 MOTOR_RIGHT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-RIGHT-LINEARRACK");
                 MOTOR_INTAKE = hardwareMap.get(DcMotor.class, "MOTOR-INTAKE");
+                LED = hardwareMap.get(DigitalChannel.class, "LIGHT");
+                LED.setMode(DigitalChannel.Mode.OUTPUT);
+                LED.setState(true);
 
                 HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
                 CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
@@ -426,6 +431,9 @@
                     //Logic linearRackTarget == linearRackHomePos &&
                     if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos && linearRackTarget == linearRackHomePos){
                         HOLDER_ROTATE.setPosition(holderPos - 0.06);             //lift intake when driving
+                        LED.setState(true);
+                    } else{
+                        LED.setState(false);
                     }
 
                     telemetry.update();
@@ -437,4 +445,5 @@
             public static int getPropPosition(){
                 return propPosition;
             }
+
         }

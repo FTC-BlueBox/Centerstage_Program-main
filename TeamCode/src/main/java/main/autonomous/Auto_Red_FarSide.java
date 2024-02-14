@@ -127,16 +127,15 @@ public class Auto_Red_FarSide extends LinearOpMode {
         TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for left prop position.forward(30)
                 .forward(30)
                 .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
-                .forward(4)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(2)
-                .back(4)
+                .back(2)
                 .strafeRight(20)
                 .splineTo(new Vector2d(35, -10), Math.toRadians(-90))                    // Move to side of backdrop (avoiding other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(48, -15, Math.toRadians(0)))              // Move in front of backdrop
+                .lineToLinearHeading(new Pose2d(45, -20, Math.toRadians(0)))              // Move in front of backdrop
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
@@ -157,7 +156,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .forward(20)
                 .splineTo(new Vector2d(35, -10), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, -36, Math.toRadians(0)))              // Move to the front of the backdrop
+                .lineToLinearHeading(new Pose2d(46, -36, Math.toRadians(0)))              // Move to the front of the backdrop
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
@@ -170,7 +169,6 @@ public class Auto_Red_FarSide extends LinearOpMode {
         TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for right prop position
                 .forward(30)                                                         // Drive to prop and deposit pixel
                 .turn(Math.toRadians(-90))
-                .forward(4)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
@@ -179,7 +177,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .strafeLeft(20)
                 .splineToConstantHeading(new Vector2d(35, -10), Math.toRadians(90))    // Drive next to backdrop and wait (for other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, -40, Math.toRadians(0)))           // Drive in front of backdrop
+                .lineToLinearHeading(new Pose2d(53, -44, Math.toRadians(0)))           // Drive in front of backdrop
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
@@ -202,61 +200,136 @@ public class Auto_Red_FarSide extends LinearOpMode {
         waitForStart();
 
         if (!isStopRequested())                                                            // When program starts, run appropriate trajectory
+           //check one again
             if (Version1_OpMode.getPropPosition() == 1) {
                 drive.followTrajectorySequence(position1_p1);
-                deliverPixel();
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);//                                                                              `   `);
+                else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                sleep(2000);
+                HOLDER_ROTATE.setPosition(holderFlippedPos);
+                sleep(500);
+                CLAMP1.setPosition(clampOpenPos);
+                sleep(500);
+                HOLDER_ROTATE.setPosition(holderHomePos);
+                sleep(500);
+
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
+                else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                sleep(2000);
+
                 drive.followTrajectorySequence(position1_p2);
             }
             else if (Version1_OpMode.getPropPosition() == 3) {
                 drive.followTrajectorySequence(position3_p1);
-                deliverPixel();
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);//                                                                              `   `);
+                else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                sleep(2000);
+                HOLDER_ROTATE.setPosition(holderFlippedPos);
+                sleep(500);
+                CLAMP1.setPosition(clampOpenPos);
+                sleep(500);
+                HOLDER_ROTATE.setPosition(holderHomePos);
+                sleep(500);
+
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
+                else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                sleep(2000);
+
                 drive.followTrajectorySequence(position3_p2);
             }else {
                 drive.followTrajectorySequence(position2_p1);
-                deliverPixel();
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);//                                                                              `   `);
+                else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                sleep(2000);
+                HOLDER_ROTATE.setPosition(holderFlippedPos);
+                sleep(500);
+                CLAMP1.setPosition(clampOpenPos);
+                sleep(500);
+                HOLDER_ROTATE.setPosition(holderHomePos);
+                sleep(500);
+
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
+                else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                sleep(2000);
+
                 drive.followTrajectorySequence(position2_p2);
             }
     }
 
     public void deliverPixel(){
 
-        MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
-        MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
-
-        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
-
-        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);//                                                                              `   `);
-        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
-
-        sleep(2000);
-        HOLDER_ROTATE.setPosition(holderFlippedPos);
-        sleep(500);
-        CLAMP1.setPosition(clampOpenPos);
-        sleep(500);
-        HOLDER_ROTATE.setPosition(holderHomePos);
-        sleep(500);
-
-        MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
-        MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
-
-        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
-
-        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
-
-        sleep(2000);
 
     }
     public class examplePipeline extends OpenCvPipeline {                                 // Create pipeline for opencv camera
