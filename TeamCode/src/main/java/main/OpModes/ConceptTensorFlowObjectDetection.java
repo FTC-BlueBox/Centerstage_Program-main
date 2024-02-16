@@ -54,17 +54,15 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "CenterStage.tflite";
-    // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
-    // this is used when uploading models directly to the RC using the model upload interface.
-    private static final String TFOD_MODEL_FILE = "CenterStage.tflite";
+    private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
+
+
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
-            "redTeamProp",
             "blueTeamProp",
+            "redTeamProp",
             "team prop"
     };
-
     /**
      * The variable to store our instance of the TensorFlow Object Detection processor.
      */

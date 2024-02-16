@@ -68,19 +68,20 @@ public class Auto_Red_CloseSide extends LinearOpMode {
     double clamp2Pos = clampOpenPos;
     double autoHolderHoldPos = 0.7;
     double autoHolderReleasePos = 1;
+    double x,y;
+    int position;
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "CenterStage.tflite";
-    // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
-    // this is used when uploading models directly to the RC using the model upload interface.
-    private static final String TFOD_MODEL_FILE = "CenterStage.tflite";
+    private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
+
+
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
-            "redTeamProp",
             "blueTeamProp",
+            "redTeamProp",
             "team prop"
     };
     private TfodProcessor tfod;
@@ -179,7 +180,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         //Scan for prop
         initTfod();
 
-        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {
             while (!isStarted() && !isStopRequested() && !opModeIsActive()){
 
                 telemetryTfod();
@@ -197,15 +198,16 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
         if (!isStopRequested()) {
             // When program starts, run appropriate trajectory
-            if (Version1_OpMode.getPropPosition() == 1) {
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            if (position == 1) {
                 drive.followTrajectorySequence(position1_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position1_p2);
-            } else if (Version1_OpMode.getPropPosition() == 3) {
+            } else if (position == 3) {
                 drive.followTrajectorySequence(position3_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position3_p2);
-            }else {
+            } else {
                 drive.followTrajectorySequence(position2_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position2_p2);
@@ -246,13 +248,19 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2;
-            double y = (recognition.getTop() + recognition.getBottom()) / 2;
+            x = (recognition.getLeft() + recognition.getRight()) / 2;
+            y = (recognition.getTop() + recognition.getBottom()) / 2;
 
             telemetry.addData("", " ");
-            telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
-            telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+
+            if (x > 10 && x < 100) {
+                position = 1;
+            } else if (x > 200 && x < 300) {
+                position = 3;
+            } else {
+                position = 2;
+            }
         }
     }
 
@@ -272,8 +280,6 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 MOTOR_RIGHT_LINEARRACK.setPower(1);
                 sleep(2000);
 
-                //try this?
-                // maybe log to telemetry the current pos to see if it thinks its running?it must?
                 int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
                 if (position1 == linearRackHomePos) {//margin of error

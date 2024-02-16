@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2017 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -26,35 +27,31 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// LED config, translate blue autos, open cv
+
 package main.autonomous;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
+        import android.util.Size;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.util.OpenCV;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
-import org.openftc.easyopencv.OpenCvWebcam;
+        import com.acmerobotics.roadrunner.geometry.Pose2d;
+        import com.acmerobotics.roadrunner.geometry.Vector2d;
+        import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+        import com.qualcomm.robotcore.hardware.DcMotor;
+        import com.qualcomm.robotcore.hardware.Servo;
+        import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+        import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+        import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+        import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+        import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+        import org.firstinspires.ftc.vision.VisionPortal;
+        import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
-import main.OpModes.Version1_OpMode;
+        import java.util.List;
 
-@Autonomous(name="Auto_Red_FarSide", group="Robot")
+        import main.OpModes.Version1_OpMode;
+
+
+@Autonomous(name="Auto_Red_FarSide")
 public class Auto_Red_FarSide extends LinearOpMode {
 
     // Initialize Variables
@@ -62,10 +59,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
     private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK;
     int linearRackHighPos = 2900;
     int linearRackHomePos = 0;
-    double leftavgfin;
-    double rightavgfin;
-    double middleavgfin;
-    OpenCvWebcam webcam = null;
+
     double holderHomePos = 0.14;
     double holderFlippedPos = 0.5;
     double holderPos = holderHomePos;
@@ -76,10 +70,27 @@ public class Auto_Red_FarSide extends LinearOpMode {
     double clamp2Pos = clampOpenPos;
     double autoHolderHoldPos = 0.7;
     double autoHolderReleasePos = 1;
+    double x,y;
+    int position;
+
+    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+
+    // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
+    // this is only used for Android Studio when using models in Assets.
+    private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
+
+    // Define the labels recognized in the model for TFOD (must be in training order!)
+    private static final String[] LABELS = {
+            "blueTeamProp",
+            "redTeamProp",
+            "team prop"
+    };
+    private TfodProcessor tfod;
+    private VisionPortal visionPortal;
+
 
     @Override
     public void runOpMode() {
-
 
         // Hardware map all necessary motors and servos
         AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
@@ -95,37 +106,23 @@ public class Auto_Red_FarSide extends LinearOpMode {
         MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         //Set servos to initialized positions
-        HOLDER_ROTATE.setPosition(holderPos- 0.06);   //main arm flip
+        HOLDER_ROTATE.setPosition(holderPos - 0.06);   //main arm flip
         CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
         CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
         AUTOHOLDER.setPosition(autoHolderHoldPos);
 
-        //Create webcam
-        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
-
-        examplePipeline pipeline = new examplePipeline();
-        webcam.setPipeline(pipeline);
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {                                                           //open camera
-                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode) {
-            }
-        });
-
+        //Create road runner trajectories
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Pose2d startPose = new Pose2d(-34, -62, Math.toRadians(90));                       // Starting Position 12,-62 heading 90 degrees
         drive.setPoseEstimate(startPose);
 
         // Team prop is on the left
-        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for left prop position.forward(30)
+        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position.forward(30)
                 .forward(30)
                 .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
@@ -134,7 +131,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .waitSeconds(2)
                 .back(2)
                 .strafeRight(20)
-                .splineTo(new Vector2d(35, -10), Math.toRadians(-90))                    // Move to side of backdrop (avoiding other team)
+                .splineTo(new Vector2d(35, -10), Math.toRadians(-90))                     // Move to side of backdrop (avoiding other team)
                 .waitSeconds(6)
                 .lineToLinearHeading(new Pose2d(45, -20, Math.toRadians(0)))              // Move in front of backdrop
                 .build();
@@ -187,46 +184,112 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .forward(10)
                 .build();
 
+        //Scan for prop
+        initTfod();
 
-        while (!isStopRequested() && !isStarted()) {
-            pipeline.returnPosition();
-            telemetry.addData("Status: ", "Ready to run");                       // Update telemetry information
-            telemetry.addData("Prop Position: ", Version1_OpMode.getPropPosition());
-            telemetry.update();// Continuously update the prop position during init()
+        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+            while (!isStarted() && !isStopRequested() && !opModeIsActive()){
+
+                telemetryTfod();
+
+                // Push telemetry to the Driver Station.
+                telemetry.update();
+
+                // Share the CPU.
+                sleep(20);
+            }
         }
-
-        // Send telemetry message to signify robot waiting;
-
-        sleep(500);
+        visionPortal.close();
 
         waitForStart();
 
-        if (!isStopRequested())    {                                                        // When program starts, run appropriate trajectory
-            //check one again
-            drive.followTrajectorySequence(position2_p1);
-            deliverPixel();
-            drive.followTrajectorySequence(position2_p2);
-            /* if (!isStopRequested()) {
-                // When program starts, run appropriate trajectory
-                if (Version1_OpMode.getPropPosition() == 1) {
-                    drive.followTrajectorySequence(position1_p1);
-                    deliverPixel();
-                    drive.followTrajectorySequence(position1_p2);
-                } else if (Version1_OpMode.getPropPosition() == 3) {
-                    drive.followTrajectorySequence(position3_p1);
-                    deliverPixel();
-                    drive.followTrajectorySequence(position3_p2);
-                } else {
-                    drive.followTrajectorySequence(position2_p1);
-                    deliverPixel();
-                    drive.followTrajectorySequence(position2_p2);
-                }
-            }*/
-    }}
-        public void deliverPixel() {
-            MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (!isStopRequested()) {
+            // When program starts, run appropriate trajectory
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            if (position == 1) {
+                drive.followTrajectorySequence(position1_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position1_p2);
+            } else if (position == 3) {
+                drive.followTrajectorySequence(position3_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position3_p2);
+            } else {
+                drive.followTrajectorySequence(position2_p1);
+                deliverPixel();
+                drive.followTrajectorySequence(position2_p2);
+            }
+        }
+    }
+    public void initTfod() {
 
+        // Create the TensorFlow processor by using a builder.
+        tfod = new TfodProcessor.Builder()
+                .setModelAssetName(TFOD_MODEL_ASSET)
+                .setModelLabels(LABELS)
+
+                .build();
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the camera (webcam vs. built-in RC phone camera).
+        if (USE_WEBCAM) {
+            builder.setCamera(hardwareMap.get(WebcamName.class, "webcam")); //check
+        } else {
+            builder.setCamera(BuiltinCameraDirection.BACK);
+        }
+
+        builder.setCameraResolution(new Size(640, 480));
+        builder.enableLiveView(true);
+        builder.setAutoStopLiveView(false);
+        builder.addProcessor(tfod);
+
+        // Build the Vision Portal, using the above settings.
+        visionPortal = builder.build();
+    }
+
+    public void telemetryTfod() {
+
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+
+        // Step through the list of recognitions and display info for each one.
+        for (Recognition recognition : currentRecognitions) {
+            x = (recognition.getLeft() + recognition.getRight()) / 2;
+            y = (recognition.getTop() + recognition.getBottom()) / 2;
+
+            telemetry.addData("", " ");
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+
+            if (x > 10 && x < 100) {
+                position = 1;
+            } else if (x > 200 && x < 300) {
+                position = 3;
+            } else {
+                position = 2;
+            }
+        }
+    }
+
+    public void deliverPixel() {
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+        MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        MOTOR_LEFT_LINEARRACK.setPower(-1);
+        MOTOR_RIGHT_LINEARRACK.setPower(1);
+        sleep(2000);
+
+        int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
+
+        if (position1 == linearRackHomePos) {//margin of error
             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
 
@@ -238,103 +301,34 @@ public class Auto_Red_FarSide extends LinearOpMode {
             MOTOR_LEFT_LINEARRACK.setPower(-1);
             MOTOR_RIGHT_LINEARRACK.setPower(1);
 
-            //try this?
-            // maybe log to telemetry the current pos to see if it thinks its running?it must?
-            int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
-
-            if (position1 == linearRackHomePos) {//margin of error
-                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
-                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
-
-                MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                MOTOR_LEFT_LINEARRACK.setPower(-1);
-                MOTOR_RIGHT_LINEARRACK.setPower(1);
-
-                sleep(2000);
-
-            } else{
-                sleep(2000);
-            }
-
-            HOLDER_ROTATE.setPosition(holderFlippedPos);
-            sleep(500);
-            CLAMP1.setPosition(clampOpenPos);
-            sleep(500);
-            HOLDER_ROTATE.setPosition(holderHomePos);
-            sleep(500);
-
-            MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
-            MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
-
-            MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            MOTOR_LEFT_LINEARRACK.setPower(-1);
-
-            MOTOR_RIGHT_LINEARRACK.setPower(1);
-
             sleep(2000);
-        }
-    public class examplePipeline extends OpenCvPipeline {                                 // Create pipeline for opencv camera
-        Mat YCbCr = new Mat();
-        Mat leftCrop;
-        Mat rightCrop;
-        Mat middleCrop;
-
-        Mat outPut = new Mat();
-        Scalar rectColorRed = new Scalar(255.0,0.0,0.0);
-        public Mat processFrame(Mat input){
-            Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
-
-            //Change slightly?
-            Rect leftRect = new Rect(1,1,210,479);
-            Rect middleRect = new Rect(210,1,210,479);
-            Rect rightRect = new Rect(420,1,210,479);
-
-
-            input.copyTo(outPut);
-            Imgproc.rectangle(outPut,leftRect,rectColorRed,2);                    // Check for red values
-            Imgproc.rectangle(outPut, rightRect, rectColorRed, 2);
-            Imgproc.rectangle(outPut, middleRect, rectColorRed, 2);
-
-            leftCrop = YCbCr.submat(leftRect);
-            rightCrop = YCbCr.submat(rightRect);
-            middleCrop = YCbCr.submat(middleRect);
-
-            Core.extractChannel(leftCrop, leftCrop, 2);                               // Split up screen
-            Core.extractChannel(rightCrop, rightCrop, 2);
-            Core.extractChannel(middleCrop, middleCrop,2);
-
-            Scalar leftavg = Core.mean(leftCrop);
-            Scalar rightavg = Core.mean(rightCrop);
-            Scalar middleavg = Core.mean(middleCrop);
-
-            leftavgfin = leftavg.val[0];                                                  // Average color values
-            rightavgfin = rightavg.val[0];
-            middleavgfin = middleavg.val[0];
-
-            /*telemetry.addData("right",rightavgfin);
-            telemetry.addData("left",leftavgfin);
-            telemetry.addData("middle",middleavgfin);*/
-
-            return(outPut);
-        }
-        public int returnPosition(){                                                     // Set prop position according to averages
-            if (leftavgfin > rightavgfin && leftavgfin > middleavgfin) {
-                Version1_OpMode.setPropPosition(1);
-            } else if (leftavgfin < rightavgfin && rightavgfin > middleavgfin) {
-                Version1_OpMode.setPropPosition(3);
-            } else {
-                Version1_OpMode.setPropPosition(2);
-            } return Version1_OpMode.getPropPosition();
+            position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
         }
 
+
+        HOLDER_ROTATE.setPosition(holderFlippedPos);
+        sleep(500);
+        CLAMP1.setPosition(clampOpenPos);
+        sleep(500);
+        HOLDER_ROTATE.setPosition(holderHomePos);
+        sleep(500);
+
+        MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+        MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+
+        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        MOTOR_LEFT_LINEARRACK.setPower(-1);
+        MOTOR_RIGHT_LINEARRACK.setPower(1);
+
+        sleep(2000);
     }
-
 }
+
+
+
+
+

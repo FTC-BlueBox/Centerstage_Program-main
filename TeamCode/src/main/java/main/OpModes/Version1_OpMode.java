@@ -69,9 +69,9 @@
             public void runOpMode() {
 
                 double MotorPower = 0.0;
-                double reduceSpeedFactor = 0.85;                          // reduce motor power
+                double reduceSpeedFactor = 0.85;                          // reduce motor power (controller b only)
                 double intakeMotorPower = -1;
-                int intakeStatus = 1;                                    //check if intake is running (binary)
+                int intakeStatus = 1;                                    // check if intake is running (binary)
 
                 int linearRackHomePos = 0;
                 int linearRackHighPos = 3600;
@@ -327,23 +327,47 @@
                         }
                         sleep(200);
                     }
+                    if(gamepad1.right_trigger  >= 0.5 ){
+                        if(linearRackTarget == linearRackHomePos){
+                            MOTOR_LEFT_LINEARRACK.setTargetPosition(-500);
+                            MOTOR_RIGHT_LINEARRACK.setTargetPosition(500);
+                            linearRackTarget = linearRackHighPos;
+                        }
+                        else if(linearRackTarget == linearRackHighPos){
+                            MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
+                            MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+                            linearRackTarget = linearRackHomePos;
+                        }
+                        MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
+                        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+
+                        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
+                        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+
+                        sleep(1300);
+                        }
+                    }
 
 
 
                     //gamepad 2
                     if(gamepad2.a){                                                           //Turn on intake
-                        if(linearRackTarget == linearRackHomePos && holderPos == holderHomePos){
-                            if(intakeStatus == 1){
-                                MOTOR_INTAKE.setPower(0.0);
-                                LED2.setState(true);
-                                intakeStatus = 0;
-                            }else{
-                                MOTOR_INTAKE.setPower(intakeMotorPower);
-                                LED2.setState(false);
-                                intakeStatus = 1;
-                            }
-                            sleep(200);
+                        if(intakeStatus == 1){
+                            MOTOR_INTAKE.setPower(0.0);
+                            LED2.setState(true);                                        // Turn on LED indicator
+                            intakeStatus = 0;
+                        } else if (linearRackTarget == linearRackHomePos && holderPos == holderHomePos) {
+                            MOTOR_INTAKE.setPower(intakeMotorPower);
+                            LED2.setState(false);
+                            intakeStatus = 1;
                         }
+                        sleep(200);
+
                     }
                     if(gamepad2.y){
                         if(linearRackTarget == linearRackHomePos){
@@ -433,7 +457,7 @@
                     }
 
 
-                    //Logic linearRackTarget == linearRackHomePos &&
+                    //Logic and LED's
                     if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos && linearRackTarget == linearRackHomePos){
                         HOLDER_ROTATE.setPosition(holderPos - 0.06);             //lift intake when driving
                         LED1.setState(false);
@@ -443,12 +467,5 @@
 
                     telemetry.update();
                 }
-            }
-            public static void setPropPosition(int p){
-                propPosition = p;
-            }
-            public static int getPropPosition(){
-                return propPosition;
-            }
 
         }

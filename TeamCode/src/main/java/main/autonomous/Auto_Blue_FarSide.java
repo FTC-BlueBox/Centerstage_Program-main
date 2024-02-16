@@ -1,5 +1,3 @@
-
-
 /* Copyright (c) 2017 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -71,19 +69,21 @@ public class Auto_Blue_FarSide extends LinearOpMode {
     double clamp2Pos = clampOpenPos;
     double autoHolderHoldPos = 0.7;
     double autoHolderReleasePos = 1;
+    double x,y;
+    int position;
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "CenterStage.tflite";
-    // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
-    // this is used when uploading models directly to the RC using the model upload interface.
-    private static final String TFOD_MODEL_FILE = "CenterStage.tflite";
+    private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
+
+
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
+            "blueTeamProp",
             "redTeamProp",
-            "blueTeamProp"
+            "team prop"
     };
     private TfodProcessor tfod;
     private VisionPortal visionPortal;
@@ -160,7 +160,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
-                                                                  //Drive into the parking zone
+                //Drive into the parking zone
                 .strafeRight(25)
                 .forward(10)
                 .build();
@@ -171,7 +171,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 .turn(Math.toRadians(-90))
                 .forward(2)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                     AUTOHOLDER.setPosition(autoHolderReleasePos);
+                    AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(2)
                 .back(4)
@@ -187,10 +187,11 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 .forward(10)
                 .build();
 
-        //Scan for prop
-        //initTfod();
 
-      /*  if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+        //Scan for prop
+        initTfod();
+
+        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
             while (!isStarted() && !isStopRequested() && !opModeIsActive()){
 
                 telemetryTfod();
@@ -202,32 +203,28 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 sleep(20);
             }
         }
-        visionPortal.close();*/ //camera stuff
-
+        visionPortal.close();
         waitForStart();
 
         if (!isStopRequested()) {
-            //note: tune position 1
-            drive.followTrajectorySequence(position2_p1); //check on left it goes left backgrop
-            deliverPixel();
-            drive.followTrajectorySequence(position2_p2);
             // When program starts, run appropriate trajectory
-           /* if (Version1_OpMode.getPropPosition() == 1) {
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            if (position == 1) {
                 drive.followTrajectorySequence(position1_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position1_p2);
-            } else if (Version1_OpMode.getPropPosition() == 3) {
+            } else if (position == 3) {
                 drive.followTrajectorySequence(position3_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position3_p2);
-            }else {
+            } else {
                 drive.followTrajectorySequence(position2_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position2_p2);
-            }*/
-            //  }
-
-  /*  private void initTfod() {
+            }
+        }
+    }
+    public void initTfod() {
 
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
@@ -255,24 +252,28 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         visionPortal = builder.build();
     }
 
-    private void telemetryTfod() {
+    public void telemetryTfod() {
 
         List<Recognition> currentRecognitions = tfod.getRecognitions();
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+            x = (recognition.getLeft() + recognition.getRight()) / 2;
+            y = (recognition.getTop() + recognition.getBottom()) / 2;
 
-            telemetry.addData(""," ");
-            telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+            telemetry.addData("", " ");
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
-            telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
-        }
 
-    }*/
+            if (x > 10 && x < 100) {
+                position = 1;
+            } else if (x > 200 && x < 300) {
+                position = 3;
+            } else {
+                position = 2;
+            }
         }
     }
+
     public void deliverPixel() {
         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -289,8 +290,6 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         MOTOR_RIGHT_LINEARRACK.setPower(1);
         sleep(2000);
 
-        //try this?
-        // maybe log to telemetry the current pos to see if it thinks its running?it must?
         int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
         if (position1 == linearRackHomePos) {//margin of error
@@ -326,12 +325,16 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         MOTOR_LEFT_LINEARRACK.setPower(-1);
-
         MOTOR_RIGHT_LINEARRACK.setPower(1);
 
         sleep(2000);
     }
 }
+
+
+
+
+
 
 
 

@@ -32,6 +32,7 @@ package main.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -56,9 +57,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name="auto 1", group="Robot")
 public class parkingAuto extends LinearOpMode {
     private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
+    private Servo HOLDER_ROTATE;
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
     double MotorPower = 0.4;
+    double holderHomePos = 0.125 - 0.06;
 
     static final double     FORWARD_SPEED = 0.6;
     static final double     TURN_SPEED    = 0.5;
@@ -71,6 +74,9 @@ public class parkingAuto extends LinearOpMode {
         MOTOR2 = hardwareMap.get(DcMotor.class, "MOTOR2");
         MOTOR3  = hardwareMap.get(DcMotor.class, "MOTOR3");
         MOTOR4 = hardwareMap.get(DcMotor.class, "MOTOR4");
+        HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
+
+        HOLDER_ROTATE.setPosition(holderHomePos);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("linear rack faces backdrop", "Ready to run");    //

@@ -1,0 +1,23 @@
+TODO:
+✔ Check/fix static
+✔ LED's
+✔ Replace Box
+✔ Print new hooks
+✔ Elongate linear rack string
+✔ Debug linear rack auo
+✔ Train ml tool
+✔ Create scouting report
+✔ Engineering portfolio
+✔ Change isbusy()
+
+- Mount camera
+- Test camera detection
+- Run through presentation
+- Tune all autos
+- Ask questions
+- Fix pixels not fully in-taking
+- Fix random disconnect
+- Fix any dead zoning
+- Plane launch
+
+- When Anna comes, driver practice, allow rookies to drive
