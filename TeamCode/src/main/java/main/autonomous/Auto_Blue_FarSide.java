@@ -1,3 +1,5 @@
+
+
 /* Copyright (c) 2017 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -29,32 +31,28 @@
 
 package main.autonomous;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
+        import android.util.Size;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.util.OpenCV;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
-import org.openftc.easyopencv.OpenCvWebcam;
+        import com.acmerobotics.roadrunner.geometry.Pose2d;
+        import com.acmerobotics.roadrunner.geometry.Vector2d;
+        import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+        import com.qualcomm.robotcore.hardware.DcMotor;
+        import com.qualcomm.robotcore.hardware.Servo;
+        import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+        import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+        import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+        import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+        import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+        import org.firstinspires.ftc.vision.VisionPortal;
+        import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
-import main.OpModes.Version1_OpMode;
+        import java.util.List;
 
-@Autonomous(name="Auto_Blue_FarSide", group="Robot")
+        import main.OpModes.Version1_OpMode;
+
+
+@Autonomous(name="Auto_Blue_FarSide")
 public class Auto_Blue_FarSide extends LinearOpMode {
 
     // Initialize Variables
@@ -62,11 +60,6 @@ public class Auto_Blue_FarSide extends LinearOpMode {
     private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK;
     int linearRackHighPos = 2900;
     int linearRackHomePos = 0;
-    double leftavgfin;
-    double rightavgfin;
-    double middleavgfin;
-    OpenCvWebcam webcam = null;
-
 
     double holderHomePos = 0.14;
     double holderFlippedPos = 0.5;
@@ -76,8 +69,25 @@ public class Auto_Blue_FarSide extends LinearOpMode {
     double clampOpenPos = 0.0;
     double clamp1Pos = clamp1ClosePos;
     double clamp2Pos = clampOpenPos;
-    double autoHolderHoldPos = 0.0;
-    double autoHolderReleasePos = 0.4;
+    double autoHolderHoldPos = 0.7;
+    double autoHolderReleasePos = 1;
+
+    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+
+    // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
+    // this is only used for Android Studio when using models in Assets.
+    private static final String TFOD_MODEL_ASSET = "CenterStage.tflite";
+    // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
+    // this is used when uploading models directly to the RC using the model upload interface.
+    private static final String TFOD_MODEL_FILE = "CenterStage.tflite";
+    // Define the labels recognized in the model for TFOD (must be in training order!)
+    private static final String[] LABELS = {
+            "redTeamProp",
+            "blueTeamProp"
+    };
+    private TfodProcessor tfod;
+    private VisionPortal visionPortal;
+
 
     @Override
     public void runOpMode() {
@@ -96,32 +106,19 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         //Set servos to initialized positions
-        HOLDER_ROTATE.setPosition(holderPos);   //main arm flip
+        HOLDER_ROTATE.setPosition(holderPos - 0.06);   //main arm flip
         CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
         CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
-        AUTOHOLDER.setPosition(autoHolderHoldPos - 0.03);
+        AUTOHOLDER.setPosition(autoHolderHoldPos);
 
-        //Create webcam
-        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
-
-        examplePipeline pipeline = new examplePipeline();
-        webcam.setPipeline(pipeline);
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {                                                           //open camera
-                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
-            }
-            @Override
-            public void onError(int errorCode) {
-            }
-        });
-
+        //Create road runner trajectories
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-34, 62, Math.toRadians(90));                       // Starting Position 12,-62 heading 90 degrees
+        Pose2d startPose = new Pose2d(-34, 64, Math.toRadians(-90));                       // Starting Position 12,-62 heading 90 degrees
         drive.setPoseEstimate(startPose);
 
         // Team prop is on the left
@@ -152,63 +149,74 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .back(4)
-                .strafeRight(20)                                                        // Avoid other team
+                .strafeRight(15)                                                        // Avoid other team
                 .forward(20)
                 .splineTo(new Vector2d(40, 20), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, 35, Math.toRadians(0)))              // Move to the front of the backdrop
+                .lineToLinearHeading(new Pose2d(44, 45, Math.toRadians(0)))              // Move to the front of the backdrop
+                .forward(7)
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
-                .waitSeconds(8)                                                             //Drive into the parking zone
+                                                                  //Drive into the parking zone
                 .strafeRight(25)
                 .forward(10)
                 .build();
 
         // Team prop on the right
-        TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for right prop position
+        TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)          // Create trajectory for right prop position
                 .forward(30)                                                         // Drive to prop and deposit pixel
                 .turn(Math.toRadians(-90))
-                .forward(4)
+                .forward(2)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(2)
                 .back(4)
-                .strafeLeft(20)
-                .splineTo(new Vector2d(45, 10), Math.toRadians(90))    // Drive next to backdrop and wait (for other team)
+                .strafeLeft(30)
+                .turn(Math.toRadians(185))
+                .lineToLinearHeading(new Pose2d(45, 10, Math.toRadians(0)))          // Drive next to backdrop and wait (for other team)
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, 30, Math.toRadians(0)))           // Drive in front of backdrop
+                .lineToLinearHeading(new Pose2d(47, 35, Math.toRadians(0)))           // Drive in front of backdrop
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
-                .waitSeconds(8)
                 .strafeRight(20)                                                   // Drive into parking zone
                 .forward(10)
                 .build();
 
+        //Scan for prop
+        //initTfod();
 
-        while (!isStopRequested() && !isStarted()) {
-            pipeline.returnPosition();                                                     // Continuously update the prop position during init()
+      /*  if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+            while (!isStarted() && !isStopRequested() && !opModeIsActive()){
+
+                telemetryTfod();
+
+                // Push telemetry to the Driver Station.
+                telemetry.update();
+
+                // Share the CPU.
+                sleep(20);
+            }
         }
-
-        // Send telemetry message to signify robot waiting;
-        telemetry.addData("Status: ", "Ready to run");                       // Update telemetry information
-        telemetry.addData("Prop Position: ", Version1_OpMode.getPropPosition());
-        telemetry.update();
-        sleep(500);
+        visionPortal.close();*/ //camera stuff
 
         waitForStart();
 
-        if (!isStopRequested())                                                            // When program starts, run appropriate trajectory
-            if (Version1_OpMode.getPropPosition() == 1) {
+        if (!isStopRequested()) {
+            //note: tune position 1
+            drive.followTrajectorySequence(position2_p1); //check on left it goes left backgrop
+            deliverPixel();
+            drive.followTrajectorySequence(position2_p2);
+            // When program starts, run appropriate trajectory
+           /* if (Version1_OpMode.getPropPosition() == 1) {
                 drive.followTrajectorySequence(position1_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position1_p2);
-            }
-            else if (Version1_OpMode.getPropPosition() == 3) {
+            } else if (Version1_OpMode.getPropPosition() == 3) {
                 drive.followTrajectorySequence(position3_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position3_p2);
@@ -216,10 +224,58 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 drive.followTrajectorySequence(position2_p1);
                 deliverPixel();
                 drive.followTrajectorySequence(position2_p2);
-            }
+            }*/
+            //  }
+
+  /*  private void initTfod() {
+
+        // Create the TensorFlow processor by using a builder.
+        tfod = new TfodProcessor.Builder()
+                .setModelAssetName(TFOD_MODEL_ASSET)
+                .setModelLabels(LABELS)
+
+                .build();
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the camera (webcam vs. built-in RC phone camera).
+        if (USE_WEBCAM) {
+            builder.setCamera(hardwareMap.get(WebcamName.class, "webcam")); //check
+        } else {
+            builder.setCamera(BuiltinCameraDirection.BACK);
+        }
+
+        builder.setCameraResolution(new Size(640, 480));
+        builder.enableLiveView(true);
+        builder.setAutoStopLiveView(false);
+        builder.addProcessor(tfod);
+
+        // Build the Vision Portal, using the above settings.
+        visionPortal = builder.build();
     }
 
-    public void deliverPixel(){
+    private void telemetryTfod() {
+
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+
+        // Step through the list of recognitions and display info for each one.
+        for (Recognition recognition : currentRecognitions) {
+            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
+            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+
+            telemetry.addData(""," ");
+            telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+        }
+
+    }*/
+        }
+    }
+    public void deliverPixel() {
+        MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
         MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
@@ -229,13 +285,31 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
-
-        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);//                                                                              `   `);
-        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
-
+        MOTOR_LEFT_LINEARRACK.setPower(-1);
+        MOTOR_RIGHT_LINEARRACK.setPower(1);
         sleep(2000);
+
+        //try this?
+        // maybe log to telemetry the current pos to see if it thinks its running?it must?
+        int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
+
+        if (position1 == linearRackHomePos) {//margin of error
+            MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
+            MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+
+            MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            MOTOR_LEFT_LINEARRACK.setPower(-1);
+            MOTOR_RIGHT_LINEARRACK.setPower(1);
+
+            sleep(2000);
+            position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
+        }
+
+
         HOLDER_ROTATE.setPosition(holderFlippedPos);
         sleep(500);
         CLAMP1.setPosition(clampOpenPos);
@@ -251,69 +325,16 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+        MOTOR_LEFT_LINEARRACK.setPower(-1);
 
-        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+        MOTOR_RIGHT_LINEARRACK.setPower(1);
 
         sleep(2000);
-
     }
-    public class examplePipeline extends OpenCvPipeline {                                 // Create pipeline for opencv camera
-        Mat YCbCr = new Mat();
-        Mat leftCrop;
-        Mat rightCrop;
-        Mat middleCrop;
-
-        Mat outPut = new Mat();
-        Scalar rectColorBlue = new Scalar(0.0,0.0,255.0);
-        public Mat processFrame(Mat input){
-            Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
-
-            //Change slightly?
-            Rect leftRect = new Rect(1,1,210,479);
-            Rect middleRect = new Rect(210,1,210,479);
-            Rect rightRect = new Rect(420,1,210,479);
-
-
-            input.copyTo(outPut);
-            Imgproc.rectangle(outPut,leftRect,rectColorBlue,2);                    // Check for red values
-            Imgproc.rectangle(outPut, rightRect, rectColorBlue, 2);
-            Imgproc.rectangle(outPut, middleRect, rectColorBlue, 2);
-
-            leftCrop = YCbCr.submat(leftRect);
-            rightCrop = YCbCr.submat(rightRect);
-            middleCrop = YCbCr.submat(middleRect);
-
-            Core.extractChannel(leftCrop, leftCrop, 2);                               // Split up screen
-            Core.extractChannel(rightCrop, rightCrop, 2);
-            Core.extractChannel(middleCrop, middleCrop,2);
-
-            Scalar leftavg = Core.mean(leftCrop);
-            Scalar rightavg = Core.mean(rightCrop);
-            Scalar middleavg = Core.mean(middleCrop);
-
-            leftavgfin = leftavg.val[0];                                                  // Average color values
-            rightavgfin = rightavg.val[0];
-            middleavgfin = middleavg.val[0];
-
-            /*telemetry.addData("right",rightavgfin);
-            telemetry.addData("left",leftavgfin);
-            telemetry.addData("middle",middleavgfin);*/
-
-            return(outPut);
-        }
-        public int returnPosition(){                                                     // Set prop position according to averages
-            if (leftavgfin > rightavgfin && leftavgfin > middleavgfin) {
-                Version1_OpMode.setPropPosition(1);
-            } else if (leftavgfin < rightavgfin && rightavgfin > middleavgfin) {
-                Version1_OpMode.setPropPosition(3);
-            } else {
-                Version1_OpMode.setPropPosition(2);
-            } return Version1_OpMode.getPropPosition();
-        }
-
-    }
-
 }
+
+
+
+
+
+

@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+// LED config, translate blue autos, open cv
 package main.autonomous;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -201,7 +201,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
 
         waitForStart();
 
-        if (!isStopRequested())                                                            // When program starts, run appropriate trajectory
+        if (!isStopRequested())    {                                                        // When program starts, run appropriate trajectory
             //check one again
             drive.followTrajectorySequence(position2_p1);
             deliverPixel();
@@ -222,7 +222,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
                     drive.followTrajectorySequence(position2_p2);
                 }
             }*/
-    }
+    }}
         public void deliverPixel() {
             MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -235,8 +235,8 @@ public class Auto_Red_FarSide extends LinearOpMode {
             MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
-            if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+            MOTOR_LEFT_LINEARRACK.setPower(-1);
+            MOTOR_RIGHT_LINEARRACK.setPower(1);
 
             //try this?
             // maybe log to telemetry the current pos to see if it thinks its running?it must?
@@ -251,8 +251,8 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
-                if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                MOTOR_LEFT_LINEARRACK.setPower(-1);
+                MOTOR_RIGHT_LINEARRACK.setPower(1);
 
                 sleep(2000);
 
@@ -275,11 +275,9 @@ public class Auto_Red_FarSide extends LinearOpMode {
             MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
-            else MOTOR_LEFT_LINEARRACK.setPower(0);
+            MOTOR_LEFT_LINEARRACK.setPower(-1);
 
-            if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
-            else MOTOR_RIGHT_LINEARRACK.setPower(0);
+            MOTOR_RIGHT_LINEARRACK.setPower(1);
 
             sleep(2000);
         }

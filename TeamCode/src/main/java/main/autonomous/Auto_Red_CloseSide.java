@@ -80,7 +80,8 @@ public class Auto_Red_CloseSide extends LinearOpMode {
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
             "redTeamProp",
-            "blueTeamProp"
+            "blueTeamProp",
+            "team prop"
     };
     private TfodProcessor tfod;
     private VisionPortal visionPortal;
@@ -133,7 +134,6 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
-                .waitSeconds(2)
                 .back(4)
                 .strafeRight(31)                                                         // Drive into park zone
                 .forward(6)
@@ -151,8 +151,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(50, -36, Math.toRadians(0)))               // Drive to backdrop
                 .build();
 
-        TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
-                .waitSeconds(8)                                                                 //Drive into the parking zone
+        TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end()) //Drive into the parking zone
                 .back(4)
                 .strafeRight(23)
                 .forward(10)
@@ -178,9 +177,9 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 .build();
 
         //Scan for prop
-        //initTfod();
+        initTfod();
 
-      /*  if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
             while (!isStarted() && !isStopRequested() && !opModeIsActive()){
 
                 telemetryTfod();
@@ -192,7 +191,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 sleep(20);
             }
         }
-        visionPortal.close();*/ //camera stuff
+        visionPortal.close();
 
         waitForStart();
 
@@ -211,9 +210,9 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 deliverPixel();
                 drive.followTrajectorySequence(position2_p2);
             }
-            //  }
-
-  /*  private void initTfod() {
+            }
+        }
+    public void initTfod() {
 
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
@@ -241,25 +240,23 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         visionPortal = builder.build();
     }
 
-    private void telemetryTfod() {
+    public void telemetryTfod() {
 
         List<Recognition> currentRecognitions = tfod.getRecognitions();
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+            double x = (recognition.getLeft() + recognition.getRight()) / 2;
+            double y = (recognition.getTop() + recognition.getBottom()) / 2;
 
-            telemetry.addData(""," ");
+            telemetry.addData("", " ");
             telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
             telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
         }
-
-    }*/
-        }
     }
-            public void deliverPixel() {
+
+        public void deliverPixel() {
                 MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -271,8 +268,8 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
-                if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                MOTOR_LEFT_LINEARRACK.setPower(-1);
+                MOTOR_RIGHT_LINEARRACK.setPower(1);
                 sleep(2000);
 
                 //try this?
@@ -288,8 +285,8 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                     MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
-                    if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                    MOTOR_LEFT_LINEARRACK.setPower(-1);
+                    MOTOR_RIGHT_LINEARRACK.setPower(1);
 
                     sleep(2000);
                     position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
@@ -311,15 +308,13 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
-                else MOTOR_LEFT_LINEARRACK.setPower(0);
-
-                if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
-                else MOTOR_RIGHT_LINEARRACK.setPower(0);
+                MOTOR_LEFT_LINEARRACK.setPower(-1);
+                MOTOR_RIGHT_LINEARRACK.setPower(1);
 
                 sleep(2000);
             }
         }
+
 
 
 

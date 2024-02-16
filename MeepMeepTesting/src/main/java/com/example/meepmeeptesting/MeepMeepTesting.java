@@ -14,17 +14,20 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(12, -62, Math.toRadians(90)))
+                        drive.trajectorySequenceBuilder(new Pose2d(-32, 64, Math.toRadians(-90)))
                                 .forward(30)
-                                .turn(Math.toRadians(90))
-                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
                                     //AUTOHOLDER.setPosition(autoHolderReleasePos);
                                 })
                                 .waitSeconds(1)
-                                .back(6)
-                                .turn(Math.toRadians(200))                                                      // Drive to backdrop
-                                .lineToLinearHeading(new Pose2d(52, -30, Math.toRadians(15)))  // Drive to backdrop
+                                .back(4)
+                                .strafeRight(20)                                                        // Avoid other team
+                                .forward(20)
+                                .splineTo(new Vector2d(40, 20), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
+                                .waitSeconds(6)
+                                .lineToLinearHeading(new Pose2d(47, 40, Math.toRadians(0)))              // Move to the front of the backdrop
                                 .build()
+
                 );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)

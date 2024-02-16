@@ -61,7 +61,8 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
             "redTeamProp",
-            "blueTeamProp"
+            "blueTeamProp",
+            "team prop"
     };
 
     /**

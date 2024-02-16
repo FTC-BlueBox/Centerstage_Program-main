@@ -62,30 +62,30 @@
             private Servo HOLDER_ROTATE, CLAMP1, PLANE_LAUNCH, CLAMP2, AUTOHOLDER;
             public static String ALLIANCE_COLOR = "";
             public static int propPosition;
-            private DigitalChannel LED;
+            private DigitalChannel LED1, LED2;
 
 
             @Override
             public void runOpMode() {
 
                 double MotorPower = 0.0;
-                double reduceSpeedFactor = 1;                          // reduce motor power
+                double reduceSpeedFactor = 0.85;                          // reduce motor power
                 double intakeMotorPower = -1;
                 int intakeStatus = 1;                                    //check if intake is running (binary)
 
                 int linearRackHomePos = 0;
-                int linearRackHighPos = 3500;
+                int linearRackHighPos = 3600;
                 int linearRackTarget = linearRackHomePos;
                 int linearRackLiftPos = 2700;
-                double holderHomePos = 0.14;
+                double holderHomePos = 0.125;
                 double holderFlippedPos = 0.52;
                 double holderPos = holderHomePos;
                 double planeLaunchPos = 0.2;
                 double planeHoldPos = 0.6;
                 double planePos = planeHoldPos;
-                double clamp1ClosePos = 0.8;
+                double clamp1ClosePos = 1;
                 double clamp2ClosePos = 0.9;
-                double clampOpenPos = 0.0;
+                double clampOpenPos = 0.5;
                 double clamp1Pos = clampOpenPos;
                 double clamp2Pos = clampOpenPos;
 
@@ -100,16 +100,19 @@
                 MOTOR_LEFT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-LEFT-LINEARRACK");
                 MOTOR_RIGHT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-RIGHT-LINEARRACK");
                 MOTOR_INTAKE = hardwareMap.get(DcMotor.class, "MOTOR-INTAKE");
-               // LED = hardwareMap.get(DigitalChannel.class, "LIGHT");
-               // LED.setMode(DigitalChannel.Mode.OUTPUT);
-               // LED.setState(true);
+                LED1 = hardwareMap.get(DigitalChannel.class, "LIGHT");
+                LED2 = hardwareMap.get(DigitalChannel.class, "LIGHT2");
+                LED1.setMode(DigitalChannel.Mode.OUTPUT);
+                LED1.setState(true);
+                LED2.setMode(DigitalChannel.Mode.OUTPUT);
+                LED2.setState(true);
 
                 HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
                 CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
                 CLAMP2 = hardwareMap.get(Servo.class, "CLAMP2");
                 PLANE_LAUNCH = hardwareMap.get(Servo.class, "PLANE-LAUNCH");
                 AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
-
+                //set pos
 
                 // Reset Encoders
                 MOTOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -167,7 +170,7 @@
                     if(gamepad2.right_stick_y == 0 && gamepad2.right_stick_x == 0 && gamepad2.left_stick_x == 0){
                         if (gamepad1.right_stick_y != 0)                            // Robot Movement: Forward and Backward
                         {
-                            MotorPower = gamepad1.right_stick_y * reduceSpeedFactor;
+                            MotorPower = gamepad1.right_stick_y;
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(MotorPower);
@@ -176,7 +179,7 @@
                         }
                         else if (gamepad1.right_stick_x != 0 )                      // Robot Movement: Turning
                         {
-                            MotorPower =  gamepad1.right_stick_x * reduceSpeedFactor;
+                            MotorPower =  gamepad1.right_stick_x ;
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(-MotorPower);
@@ -185,7 +188,7 @@
                         }
                         else if (gamepad1.left_stick_x != 0 )                       // Robot Movement: Strafing
                         {
-                            MotorPower = gamepad1.left_stick_x * reduceSpeedFactor;
+                            MotorPower = gamepad1.left_stick_x ;
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(-MotorPower);
@@ -332,9 +335,11 @@
                         if(linearRackTarget == linearRackHomePos && holderPos == holderHomePos){
                             if(intakeStatus == 1){
                                 MOTOR_INTAKE.setPower(0.0);
+                                LED2.setState(true);
                                 intakeStatus = 0;
                             }else{
                                 MOTOR_INTAKE.setPower(intakeMotorPower);
+                                LED2.setState(false);
                                 intakeStatus = 1;
                             }
                             sleep(200);
@@ -431,9 +436,9 @@
                     //Logic linearRackTarget == linearRackHomePos &&
                     if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos && linearRackTarget == linearRackHomePos){
                         HOLDER_ROTATE.setPosition(holderPos - 0.06);             //lift intake when driving
-                       // LED.setState(true);
-                    //} else{
-                       // LED.setState(false);
+                        LED1.setState(false);
+                    } else{
+                        LED1.setState(true);
                     }
 
                     telemetry.update();
