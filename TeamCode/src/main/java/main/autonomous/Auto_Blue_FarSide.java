@@ -47,8 +47,6 @@ package main.autonomous;
 
         import java.util.List;
 
-        import main.OpModes.Version1_OpMode;
-
 
 @Autonomous(name="Auto_Blue_FarSide")
 public class Auto_Blue_FarSide extends LinearOpMode {
@@ -122,7 +120,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         // Team prop is on the left
-        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for left prop position.forward(30)
+        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position.forward(30)
                 .forward(30)
                 .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
                 .forward(4)
@@ -132,30 +130,29 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 .waitSeconds(2)
                 .back(4)
                 .strafeRight(20)
-                .splineTo(new Vector2d(45, 16), Math.toRadians(-90))                    // Move to side of backdrop (avoiding other team)
-                .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(50, 39, Math.toRadians(0)))              // Move in front of backdrop
+                .splineTo(new Vector2d(45, 16), Math.toRadians(-90))                      // Move to side of backdrop (avoiding other team)
+                .waitSeconds(8)
+                .lineToLinearHeading(new Pose2d(50, 39, Math.toRadians(0)))               // Move in front of backdrop
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
-                .waitSeconds(8)
                 .strafeRight(28)                                                        // Drive into park zone
                 .forward(10)
                 .build();
 
         // Team prop is in the middle
-        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for middle prop position
+        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for middle prop position
                 .forward(30)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(1)
                 .back(4)
-                .strafeRight(15)                                                        // Avoid other team
+                .strafeRight(15)                                                         // Avoid other team
                 .forward(20)
-                .splineTo(new Vector2d(40, 20), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
-                .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(44, 45, Math.toRadians(0)))              // Move to the front of the backdrop
+                .splineTo(new Vector2d(40, 20), Math.toRadians(0))                         // Move to backdrop and wait at the side (for other team)
+                .waitSeconds(8)
+                .lineToLinearHeading(new Pose2d(44, 45, Math.toRadians(0)))                // Move to the front of the backdrop
                 .forward(7)
                 .build();
 
@@ -177,13 +174,13 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 .back(4)
                 .strafeLeft(30)
                 .turn(Math.toRadians(185))
-                .lineToLinearHeading(new Pose2d(45, 10, Math.toRadians(0)))          // Drive next to backdrop and wait (for other team)
-                .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(47, 35, Math.toRadians(0)))           // Drive in front of backdrop
+                .lineToLinearHeading(new Pose2d(45, 10, Math.toRadians(0)))            // Drive next to backdrop and wait (for other team)
+                .waitSeconds(8)
+                .lineToLinearHeading(new Pose2d(47, 35, Math.toRadians(0)))            // Drive in front of backdrop
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
-                .strafeRight(20)                                                   // Drive into parking zone
+                .strafeRight(20)                                                     // Drive into parking zone
                 .forward(10)
                 .build();
 
@@ -191,14 +188,12 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         //Scan for prop
         initTfod();
 
-        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {
             while (!isStarted() && !isStopRequested() && !opModeIsActive()){
 
                 telemetryTfod();
-
                 // Push telemetry to the Driver Station.
                 telemetry.update();
-
                 // Share the CPU.
                 sleep(20);
             }
@@ -292,7 +287,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
 
         int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
-        if (position1 == linearRackHomePos) {//margin of error
+        if (position1 == linearRackHomePos) {
             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
 

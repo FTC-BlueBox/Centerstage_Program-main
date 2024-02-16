@@ -14,18 +14,19 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-32, 64, Math.toRadians(-90)))
+                        drive.trajectorySequenceBuilder(new Pose2d(-34, -62, Math.toRadians(90)))
                                 .forward(30)
-                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Move forward and drop of pixel
-                                    //AUTOHOLDER.setPosition(autoHolderReleasePos);
+                                .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
+                                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
+                                   // AUTOHOLDER.setPosition(autoHolderReleasePos);
                                 })
-                                .waitSeconds(1)
-                                .back(4)
-                                .strafeRight(20)                                                        // Avoid other team
-                                .forward(20)
-                                .splineTo(new Vector2d(40, 20), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
-                                .waitSeconds(6)
-                                .lineToLinearHeading(new Pose2d(47, 40, Math.toRadians(0)))              // Move to the front of the backdrop
+                                .waitSeconds(2)
+                                .back(2)
+                                .strafeRight(30)
+                                .turn(Math.toRadians(180))
+                                .splineToLinearHeading(new Pose2d(35, -10), Math.toRadians(0))                     // Move to side of backdrop (avoiding other team)
+                                .waitSeconds(8)
+                                .lineToLinearHeading(new Pose2d(45, -20, Math.toRadians(0)))              // Move in front of backdrop
                                 .build()
 
                 );

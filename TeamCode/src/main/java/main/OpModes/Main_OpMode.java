@@ -27,19 +27,12 @@
          * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
          * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
          */
-
         package main.OpModes;
-
-        import com.qualcomm.robotcore.eventloop.opmode.Disabled;
         import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
         import com.qualcomm.robotcore.hardware.DcMotor;
         import com.qualcomm.robotcore.hardware.DigitalChannel;
         import com.qualcomm.robotcore.hardware.Servo;
-        import com.qualcomm.robotcore.util.ElapsedTime;
-        import com.qualcomm.robotcore.util.Range;
-
-
         /*
          * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
          * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -53,37 +46,36 @@
          * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
          */
 
-        @TeleOp(name="OpMode V1", group="Linear OpMode")
-        public class Version1_OpMode extends LinearOpMode {
-
+        @TeleOp(name="Main OpMode", group="Linear OpMode")
+        public class Main_OpMode extends LinearOpMode {
 
             private DcMotor MOTOR1, MOTOR2, MOTOR3, MOTOR4;
             private DcMotor MOTOR_LEFT_LINEARRACK,MOTOR_RIGHT_LINEARRACK, MOTOR_INTAKE;
             private Servo HOLDER_ROTATE, CLAMP1, PLANE_LAUNCH, CLAMP2, AUTOHOLDER;
-            public static String ALLIANCE_COLOR = "";
-            public static int propPosition;
             private DigitalChannel LED1, LED2;
-
 
             @Override
             public void runOpMode() {
 
                 double MotorPower = 0.0;
-                double reduceSpeedFactor = 0.85;                          // reduce motor power (controller b only)
+                double reduceSpeedFactor = 0.85;                          // Reduce motor power (controller b only)
                 double intakeMotorPower = -1;
-                int intakeStatus = 1;                                    // check if intake is running (binary)
+                int intakeStatus = 1;                                     // Check if intake is running (binary)
 
-                int linearRackHomePos = 0;
+                int linearRackHomePos = 0;                                // Linear rack preset positions
                 int linearRackHighPos = 3600;
                 int linearRackTarget = linearRackHomePos;
                 int linearRackLiftPos = 2700;
-                double holderHomePos = 0.125;
+
+                double holderHomePos = 0.125;                             // Top intake rotator positions
                 double holderFlippedPos = 0.52;
                 double holderPos = holderHomePos;
-                double planeLaunchPos = 0.2;
+
+                double planeLaunchPos = 0.2;                              // Plane launch servo positions
                 double planeHoldPos = 0.6;
                 double planePos = planeHoldPos;
-                double clamp1ClosePos = 1;
+
+                double clamp1ClosePos = 1;                                // Pixel clamp positions
                 double clamp2ClosePos = 0.9;
                 double clampOpenPos = 0.5;
                 double clamp1Pos = clampOpenPos;
@@ -92,7 +84,7 @@
                 telemetry.addData("Status", "Initialized");
                 telemetry.update();
 
-                //  Initialize all hardware variables in the hardwaremap
+                //  Initialize all hardware variables in the hardware-map
                 MOTOR1  = hardwareMap.get(DcMotor.class, "MOTOR1");
                 MOTOR2 = hardwareMap.get(DcMotor.class, "MOTOR2");
                 MOTOR3  = hardwareMap.get(DcMotor.class, "MOTOR3");
@@ -100,6 +92,13 @@
                 MOTOR_LEFT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-LEFT-LINEARRACK");
                 MOTOR_RIGHT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-RIGHT-LINEARRACK");
                 MOTOR_INTAKE = hardwareMap.get(DcMotor.class, "MOTOR-INTAKE");
+                HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
+                CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
+                CLAMP2 = hardwareMap.get(Servo.class, "CLAMP2");
+                PLANE_LAUNCH = hardwareMap.get(Servo.class, "PLANE-LAUNCH");
+                AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
+
+                // Init LED's and set state
                 LED1 = hardwareMap.get(DigitalChannel.class, "LIGHT");
                 LED2 = hardwareMap.get(DigitalChannel.class, "LIGHT2");
                 LED1.setMode(DigitalChannel.Mode.OUTPUT);
@@ -107,14 +106,7 @@
                 LED2.setMode(DigitalChannel.Mode.OUTPUT);
                 LED2.setState(true);
 
-                HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
-                CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
-                CLAMP2 = hardwareMap.get(Servo.class, "CLAMP2");
-                PLANE_LAUNCH = hardwareMap.get(Servo.class, "PLANE-LAUNCH");
-                AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
-                //set pos
-
-                // Reset Encoders
+                // Reset DC Motor encoders
                 MOTOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 MOTOR2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 MOTOR3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -132,30 +124,17 @@
 
 
                 // Bring servos to start position
-                HOLDER_ROTATE.setPosition(holderPos);   //main arm flip
-                CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
-                CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
-                PLANE_LAUNCH.setPosition(planeHoldPos); //plane launch hold position
+                HOLDER_ROTATE.setPosition(holderPos);   // Main arm flip to home position
+                CLAMP1.setPosition(clamp1Pos);          // Front and back pixel clamps up
+                CLAMP2.setPosition(clamp2Pos);
+                PLANE_LAUNCH.setPosition(planeHoldPos); // Plane launch to hold position
+                AUTOHOLDER.setPosition(1);              // Lift auto holder out of the way
 
-                //  Wait for the ga
-                //  me to start (driver presses PLAY)
-       /* while(!opModeIsActive())
-        {
-            //  Alliance Color (X=Blue, B=Red)
-            if      (gamepad1.x || gamepad2.x)  ALLIANCE_COLOR = "BLUE";
-            else if (gamepad1.b || gamepad2.b)  ALLIANCE_COLOR = "RED";
+                waitForStart();                         //  Wait for the Play Button press
 
-            telemetry.addData("Alliance: ", ALLIANCE_COLOR);
-            telemetry.update();
-
-
-                                                              //  Wait for the Play Button press
-        }*/
-                waitForStart();
                 if (opModeIsActive()) {
 
-                    // Turn on encoders
-                    MOTOR1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    MOTOR1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);           // Turn on encoders
                     MOTOR2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     MOTOR3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     MOTOR4.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -163,14 +142,13 @@
                     MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
                 }
-                //  run until the end of the match (driver presses STOP)
-                while (opModeIsActive())
+
+                while (opModeIsActive())                                           // Run until driver presses STOP
                 {
-                    // gamepad 1
-                    if(gamepad2.right_stick_y == 0 && gamepad2.right_stick_x == 0 && gamepad2.left_stick_x == 0){
-                        if (gamepad1.right_stick_y != 0)                            // Robot Movement: Forward and Backward
+                    if(gamepad2.right_stick_y == 0 && gamepad2.right_stick_x == 0 && gamepad2.left_stick_x == 0){  // Prevent controller conflicts between game-pads
+                        if (gamepad1.right_stick_y != 0)                           // Robot Movement: Forward and Backward
                         {
-                            MotorPower = gamepad1.right_stick_y;
+                            MotorPower = gamepad1.right_stick_y;                   // Game-pad one runs at full speed
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(MotorPower);
@@ -179,7 +157,7 @@
                         }
                         else if (gamepad1.right_stick_x != 0 )                      // Robot Movement: Turning
                         {
-                            MotorPower =  gamepad1.right_stick_x ;
+                            MotorPower =  gamepad1.right_stick_x;
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(-MotorPower);
@@ -197,15 +175,15 @@
 
                         }
                         else {
-                            MotorPower = 0.0;
+                            MotorPower = 0.0;                                       // Default power to zero
 
                             MOTOR1.setPower(MotorPower);
                             MOTOR2.setPower(MotorPower);
                             MOTOR3.setPower(MotorPower);
                             MOTOR4.setPower(MotorPower);
                         }
-                    } else if(gamepad1.right_stick_y == 0 && gamepad1.right_stick_x == 0 && gamepad1.left_stick_x == 0) {
-                        if (gamepad2.right_stick_y != 0)                            // Robot Movement: Forward and Backward (flipped)
+                    } else if (gamepad1.right_stick_y == 0 && gamepad1.right_stick_x == 0 && gamepad1.left_stick_x == 0) {  // Prevent controller conflicts between game-pads
+                        if (gamepad2.right_stick_y != 0)                           // Robot Movement: Forward and Backward (flipped)
                         {
                             MotorPower = -gamepad2.right_stick_y * reduceSpeedFactor;
 
@@ -213,7 +191,8 @@
                             MOTOR2.setPower(MotorPower);
                             MOTOR3.setPower(-MotorPower);
                             MOTOR4.setPower(MotorPower);
-                        } else if (gamepad2.right_stick_x != 0)                      // Robot Movement: Turning
+                        }
+                        else if (gamepad2.right_stick_x != 0)                      // Robot Movement: Turning
                         {
                             MotorPower = gamepad2.right_stick_x * reduceSpeedFactor;
 
@@ -221,7 +200,8 @@
                             MOTOR2.setPower(-MotorPower);
                             MOTOR3.setPower(-MotorPower);
                             MOTOR4.setPower(-MotorPower);
-                        } else if (gamepad2.left_stick_x != 0)                       // Robot Movement: Strafing
+                        }
+                        else if (gamepad2.left_stick_x != 0)                       // Robot Movement: Strafing
                         {
                             MotorPower = gamepad2.left_stick_x * reduceSpeedFactor;
 
@@ -231,7 +211,7 @@
                             MOTOR4.setPower(MotorPower);
 
                         } else {
-                            MotorPower = 0.0;
+                            MotorPower = 0.0;                                      // Default power to zero
 
                             MOTOR1.setPower(MotorPower);
                             MOTOR2.setPower(MotorPower);
@@ -239,12 +219,12 @@
                             MOTOR4.setPower(MotorPower);
                         }
                     }
-                    //both gamepads: drive
-                    //gamepad 2: intake is front, turns on intake, closes both clamps
-                    //gamepad 1: LR is front, lifts LR + swing (semiauto), releases clamps, bring down all at once
 
-                    //gamepad2
-                    if(gamepad1.y){                                                  //Linear rack manual up and down movement
+                    // Game-pad 1: LR is front, semi-auto scoring, releases both clamps, control LR and intake flip
+                    // Game-pad 2: Intake is front, turns on intake, closes/opens clamps, lifts intake box from drag, hang, plane launch
+
+                    // Game-pad2
+                    if(gamepad1.y){                                                      //Linear rack manual up and down movement
                         if(linearRackTarget == linearRackHomePos){
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
@@ -268,7 +248,7 @@
 
                         sleep(1300);
                     }
-                    if(gamepad1.a){                                                      //manually flip holder
+                    if(gamepad1.a){                                                      // Manually flip intake
                         if(holderPos == holderHomePos){
                             holderPos = holderFlippedPos;
                         } else{
@@ -277,8 +257,8 @@
                         HOLDER_ROTATE.setPosition(holderPos);
                         sleep(200);
                     }
-                    if(gamepad1.right_bumper) {                                           //semi-auto bring pixels up
-                        if(linearRackTarget == linearRackHomePos){                        //first bring up linear rack
+                    if(gamepad1.right_bumper) {                                           // Semi-auto to score
+                        if(linearRackTarget == linearRackHomePos){                        // First bring up linear rack
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
                             linearRackTarget = linearRackHighPos;
@@ -310,8 +290,8 @@
                         }
 
                     }
-                    if(gamepad1.left_bumper){                                               //Open both clamps
-                        if (clamp1Pos == clampOpenPos) {
+                    if(gamepad1.left_bumper){                                               // Semi-auto scoring pixels part 2
+                        if (clamp1Pos == clampOpenPos) {                                    // Open both clamps (with delay)
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
                         }else{
@@ -327,7 +307,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad1.right_trigger  >= 0.5 ){
+                    if(gamepad1.right_trigger >= 0.5){                                      // Bring up linear rack very low (stuck pixel)
                         if(linearRackTarget == linearRackHomePos){
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-500);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(500);
@@ -349,17 +329,17 @@
                         if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
                         else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
 
-                        sleep(1300);
+                        sleep(400);
                         }
                     }
 
 
 
-                    //gamepad 2
-                    if(gamepad2.a){                                                           //Turn on intake
+                    // Game-pad 2
+                    if(gamepad2.a){                                                            // Turn on intake
                         if(intakeStatus == 1){
                             MOTOR_INTAKE.setPower(0.0);
-                            LED2.setState(true);                                        // Turn on LED indicator
+                            LED2.setState(true);                                               // Turn on LED indicator
                             intakeStatus = 0;
                         } else if (linearRackTarget == linearRackHomePos && holderPos == holderHomePos) {
                             MOTOR_INTAKE.setPower(intakeMotorPower);
@@ -369,7 +349,7 @@
                         sleep(200);
 
                     }
-                    if(gamepad2.y){
+                    if(gamepad2.y){                                                             // Bring up LR to hang height
                         if(linearRackTarget == linearRackHomePos){
                             linearRackTarget = linearRackHighPos;
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackLiftPos);
@@ -391,9 +371,9 @@
                         if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
                         else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
 
-                        sleep(1300);
+                        sleep(1000);
                     }
-                    if(gamepad2.b){                                                         // Close both clamps
+                    if(gamepad2.b){                                                             // Close/Open both clamps and lift intake off the ground
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
@@ -413,7 +393,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.right_bumper){                                             //Open/Close clamp 1 (manual)
+                    if(gamepad2.right_bumper){                                                 // Open/Close clamp 1
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
@@ -423,7 +403,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.left_bumper){                                                //Open/Close clamp 2 (manual)
+                    if(gamepad2.left_bumper){                                                  // Open/Close clamp 2
                         if (clamp2Pos == clampOpenPos) {
                             CLAMP2.setPosition(clamp2ClosePos);
                             clamp2Pos = clamp2ClosePos;
@@ -435,7 +415,7 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.x){                                                          //Launch Plane
+                    if(gamepad2.x){                                                           // Launch Plane
                         if(planePos == planeHoldPos){
                             planePos = planeLaunchPos;
                         } else {
@@ -444,7 +424,7 @@
                         PLANE_LAUNCH.setPosition(planePos);
                         sleep(200);
                     }
-                    if(gamepad2.right_trigger >= 0.5){                                      //Turn on intake
+                    if(gamepad2.right_trigger >= 0.5){                                       // Reverse intake
                             if(intakeStatus == 1){
                                 MOTOR_INTAKE.setPower(0.0);
                                 intakeStatus = 0;
@@ -457,9 +437,9 @@
                     }
 
 
-                    //Logic and LED's
+                    // Logic and LED's
                     if(clamp1Pos == clamp1ClosePos && clamp2Pos == clamp2ClosePos && linearRackTarget == linearRackHomePos){
-                        HOLDER_ROTATE.setPosition(holderPos - 0.06);             //lift intake when driving
+                        HOLDER_ROTATE.setPosition(holderPos - 0.06);                         // Lift intake when driving
                         LED1.setState(false);
                     } else{
                         LED1.setState(true);
@@ -467,5 +447,4 @@
 
                     telemetry.update();
                 }
-
         }

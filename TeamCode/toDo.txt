@@ -10,14 +10,18 @@ TODO:
 ✔ Engineering portfolio
 ✔ Change isbusy()
 
-- Mount camera
 - Test camera detection
-- Run through presentation
-- Tune all autos
-- Ask questions
+- Maximize LR lift
+- Check box lift height and emergency lift
 - Fix pixels not fully in-taking
-- Fix random disconnect
-- Fix any dead zoning
+- Mount camera
 - Plane launch
+- Fix random disconnect (network congestion?)
+- Fix any dead zoning
+- Driver practice, allow rookies to drive
 
-- When Anna comes, driver practice, allow rookies to drive
+- Run through presentation
+- Ask questions
+- Tune all autos (left side red, one right side red)
+
+

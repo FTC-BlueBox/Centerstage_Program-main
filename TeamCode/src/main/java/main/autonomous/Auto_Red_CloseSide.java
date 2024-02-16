@@ -46,8 +46,6 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.List;
 
-import main.OpModes.Version1_OpMode;
-
 
 @Autonomous(name="Auto_Red_CloseSide")
 public class Auto_Red_CloseSide extends LinearOpMode {
@@ -57,7 +55,6 @@ public class Auto_Red_CloseSide extends LinearOpMode {
     private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK;
     int linearRackHighPos = 2900;
     int linearRackHomePos = 0;
-
     double holderHomePos = 0.14;
     double holderFlippedPos = 0.5;
     double holderPos = holderHomePos;
@@ -77,7 +74,6 @@ public class Auto_Red_CloseSide extends LinearOpMode {
     // this is only used for Android Studio when using models in Assets.
     private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
 
-
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
             "blueTeamProp",
@@ -86,7 +82,6 @@ public class Auto_Red_CloseSide extends LinearOpMode {
     };
     private TfodProcessor tfod;
     private VisionPortal visionPortal;
-
 
     @Override
     public void runOpMode() {
@@ -108,13 +103,13 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //Set servos to initialized positions
-        HOLDER_ROTATE.setPosition(holderPos - 0.06);   //main arm flip
-        CLAMP1.setPosition(clamp1Pos);          //front pixel clamp
-        CLAMP2.setPosition(clamp2Pos);          //back pixel clamp
+        // Set servos to initialized positions
+        HOLDER_ROTATE.setPosition(holderPos - 0.06);   // main arm flip
+        CLAMP1.setPosition(clamp1Pos);                 // front pixel clamp
+        CLAMP2.setPosition(clamp2Pos);                 // back pixel clamp
         AUTOHOLDER.setPosition(autoHolderHoldPos);
 
-        //Create road runner trajectories
+        // Create road runner trajectories
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Pose2d startPose = new Pose2d(12, -62, Math.toRadians(90));                       // Starting Position 12,-62 heading 90 degrees
@@ -141,9 +136,9 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 .build();
 
         // Team prop is in the middle
-        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)              // Create trajectory for middle prop position
+        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)             // Create trajectory for middle prop position
                 .forward(29)
-                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                              // Drive forward and drop off pixel
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                             // Drive forward and drop off pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(1)
@@ -152,17 +147,17 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(50, -36, Math.toRadians(0)))               // Drive to backdrop
                 .build();
 
-        TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end()) //Drive into the parking zone
+        TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())    //Drive into the parking zone
                 .back(4)
                 .strafeRight(23)
                 .forward(10)
                 .build();
 
         // Team prop on the right
-        TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)           // Create trajectory for right prop position
+        TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)             // Create trajectory for right prop position
                 .strafeRight(15)
                 .forward(20)
-                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                        // Drive to and drop off pixel
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                             // Drive to and drop off pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(1)
@@ -182,18 +177,15 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
         if (!isStarted() && !isStopRequested() && !opModeIsActive()) {
             while (!isStarted() && !isStopRequested() && !opModeIsActive()){
-
                 telemetryTfod();
-
                 // Push telemetry to the Driver Station.
                 telemetry.update();
-
                 // Share the CPU.
                 sleep(20);
             }
         }
-        visionPortal.close();
 
+        visionPortal.close();
         waitForStart();
 
         if (!isStopRequested()) {
@@ -215,12 +207,10 @@ public class Auto_Red_CloseSide extends LinearOpMode {
             }
         }
     public void initTfod() {
-
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
                 .setModelAssetName(TFOD_MODEL_ASSET)
                 .setModelLabels(LABELS)
-
                 .build();
 
         // Create the vision portal by using a builder.
@@ -264,7 +254,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         }
     }
 
-        public void deliverPixel() {
+        public void deliverPixel() {                                                    // Method to lift linear rack, score pixel, bring it down
                 MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -282,7 +272,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
                 int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
-                if (position1 == linearRackHomePos) {//margin of error
+                if (position1 == linearRackHomePos) {
                     MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                     MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
 
@@ -297,7 +287,6 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                     sleep(2000);
                     position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
                 }
-
 
                 HOLDER_ROTATE.setPosition(holderFlippedPos);
                 sleep(500);

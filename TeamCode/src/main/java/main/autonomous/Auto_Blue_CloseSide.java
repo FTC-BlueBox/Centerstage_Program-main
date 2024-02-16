@@ -47,8 +47,6 @@ package main.autonomous;
 
         import java.util.List;
 
-        import main.OpModes.Version1_OpMode;
-
 
 @Autonomous(name="Auto_Blue_CloseSide")
 public class Auto_Blue_CloseSide extends LinearOpMode {
@@ -122,10 +120,10 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         // Team prop is on the left
-        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for left prop position
+        TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position
                 .strafeLeft(7)
                 .forward(20)
-                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                        // Drive to and drop off pixel
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Drive to and drop off pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(1)
@@ -140,7 +138,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 .build();
 
         // Team prop is in the middle
-        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)               // Create trajectory for middle prop position
+        TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for middle prop position
                 .forward(29)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Drive forward and drop off pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
@@ -148,21 +146,20 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 .waitSeconds(1)
                 .back(6)
                 .turn(Math.toRadians(83))
-                .lineToLinearHeading(new Pose2d(50, 35, Math.toRadians(0)))              // Drive to backdrop
+                .lineToLinearHeading(new Pose2d(50, 35, Math.toRadians(0)))               // Drive to backdrop
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
-                .waitSeconds(8)                                                              //Drive into the parking zone
-                .strafeLeft(23)
+                .strafeLeft(23)                                                         // Drive into the parking zone
                 .forward(10)
                 .build();
 
         // Team prop on the right
-        TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)           // Create trajectory for right prop position
+        TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)             // Create trajectory for right prop position
                 .forward(30)
                 .turn(Math.toRadians(-83))
                 .forward(2)
-                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                        // Run to prop and release pixel
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                             // Run to prop and release pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(1)
@@ -172,14 +169,14 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
-                .strafeLeft(30)                                                   // Drive into parking zone
+                .strafeLeft(30)                                                           // Drive into parking zone
                 .forward(10)
                 .build();
 
         //Scan for prop
         initTfod();
 
-        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {                    //does this run?
+        if (!isStarted() && !isStopRequested() && !opModeIsActive()) {
             while (!isStarted() && !isStopRequested() && !opModeIsActive()){
 
                 telemetryTfod();
@@ -226,7 +223,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
 
         // Set the camera (webcam vs. built-in RC phone camera).
         if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "webcam")); //check
+            builder.setCamera(hardwareMap.get(WebcamName.class, "webcam"));
         } else {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
@@ -280,7 +277,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
 
         int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
-        if (position1 == linearRackHomePos) {//margin of error
+        if (position1 == linearRackHomePos) {
             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
 
