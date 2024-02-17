@@ -67,7 +67,7 @@
                 int linearRackTarget = linearRackHomePos;
                 int linearRackLiftPos = 2700;
 
-                double holderHomePos = 0.125;                             // Top intake rotator positions
+                double holderHomePos = 0.12;                             // Top intake rotator positions
                 double holderFlippedPos = 0.52;
                 double holderPos = holderHomePos;
 
@@ -78,8 +78,8 @@
                 double clamp1ClosePos = 1;                                // Pixel clamp positions
                 double clamp2ClosePos = 0.9;
                 double clampOpenPos = 0.5;
-                double clamp1Pos = clampOpenPos;
-                double clamp2Pos = clampOpenPos;
+                double clamp1Pos = clamp1ClosePos;
+                double clamp2Pos = clamp2ClosePos;
 
                 telemetry.addData("Status", "Initialized");
                 telemetry.update();
@@ -145,7 +145,7 @@
 
                 while (opModeIsActive())                                           // Run until driver presses STOP
                 {
-                    if(gamepad2.right_stick_y == 0 && gamepad2.right_stick_x == 0 && gamepad2.left_stick_x == 0){  // Prevent controller conflicts between game-pads
+                    if (gamepad2.right_stick_y == 0 && gamepad2.right_stick_x == 0 && gamepad2.left_stick_x == 0) {  // Prevent controller conflicts between game-pads
                         if (gamepad1.right_stick_y != 0)                           // Robot Movement: Forward and Backward
                         {
                             MotorPower = gamepad1.right_stick_y;                   // Game-pad one runs at full speed
@@ -154,27 +154,24 @@
                             MOTOR2.setPower(MotorPower);
                             MOTOR3.setPower(-MotorPower);
                             MOTOR4.setPower(MotorPower);
-                        }
-                        else if (gamepad1.right_stick_x != 0 )                      // Robot Movement: Turning
+                        } else if (gamepad1.right_stick_x != 0)                      // Robot Movement: Turning
                         {
-                            MotorPower =  gamepad1.right_stick_x;
+                            MotorPower = gamepad1.right_stick_x;
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(-MotorPower);
                             MOTOR3.setPower(-MotorPower);
                             MOTOR4.setPower(-MotorPower);
-                        }
-                        else if (gamepad1.left_stick_x != 0 )                       // Robot Movement: Strafing
+                        } else if (gamepad1.left_stick_x != 0)                       // Robot Movement: Strafing
                         {
-                            MotorPower = gamepad1.left_stick_x ;
+                            MotorPower = gamepad1.left_stick_x;
 
                             MOTOR1.setPower(-MotorPower);
                             MOTOR2.setPower(-MotorPower);
                             MOTOR3.setPower(MotorPower);
                             MOTOR4.setPower(MotorPower);
 
-                        }
-                        else {
+                        } else {
                             MotorPower = 0.0;                                       // Default power to zero
 
                             MOTOR1.setPower(MotorPower);
@@ -191,8 +188,7 @@
                             MOTOR2.setPower(MotorPower);
                             MOTOR3.setPower(-MotorPower);
                             MOTOR4.setPower(MotorPower);
-                        }
-                        else if (gamepad2.right_stick_x != 0)                      // Robot Movement: Turning
+                        } else if (gamepad2.right_stick_x != 0)                      // Robot Movement: Turning
                         {
                             MotorPower = gamepad2.right_stick_x * reduceSpeedFactor;
 
@@ -200,8 +196,7 @@
                             MOTOR2.setPower(-MotorPower);
                             MOTOR3.setPower(-MotorPower);
                             MOTOR4.setPower(-MotorPower);
-                        }
-                        else if (gamepad2.left_stick_x != 0)                       // Robot Movement: Strafing
+                        } else if (gamepad2.left_stick_x != 0)                       // Robot Movement: Strafing
                         {
                             MotorPower = gamepad2.left_stick_x * reduceSpeedFactor;
 
@@ -224,13 +219,12 @@
                     // Game-pad 2: Intake is front, turns on intake, closes/opens clamps, lifts intake box from drag, hang, plane launch
 
                     // Game-pad2
-                    if(gamepad1.y){                                                      //Linear rack manual up and down movement
-                        if(linearRackTarget == linearRackHomePos){
+                    if (gamepad1.y) {                                                      //Linear rack manual up and down movement
+                        if (linearRackTarget == linearRackHomePos) {
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
                             linearRackTarget = linearRackHighPos;
-                        }
-                        else if(linearRackTarget == linearRackHighPos){
+                        } else if (linearRackTarget == linearRackHighPos) {
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                             linearRackTarget = linearRackHomePos;
@@ -240,35 +234,38 @@
                         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-                        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+                        if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                        else MOTOR_LEFT_LINEARRACK.setPower(0);
 
-                        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-                        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+                        if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                        else MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                         sleep(1300);
                     }
-                    if(gamepad1.a){                                                      // Manually flip intake
-                        if(holderPos == holderHomePos){
+                    if (gamepad1.a) {                                                      // Manually flip intake
+                        if (holderPos == holderHomePos) {
                             holderPos = holderFlippedPos;
-                        } else{
+                        } else {
                             holderPos = holderHomePos;
                         }
                         HOLDER_ROTATE.setPosition(holderPos);
                         sleep(200);
                     }
-                    if(gamepad1.right_bumper) {                                           // Semi-auto to score
-                        if(linearRackTarget == linearRackHomePos){                        // First bring up linear rack
+                    if (gamepad1.right_bumper) {                                           // Semi-auto to score
+                        if (linearRackTarget == linearRackHomePos) {                        // First bring up linear rack
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
                             linearRackTarget = linearRackHighPos;
-                        }
-                        else if(linearRackTarget == linearRackHighPos){
+                        } else if (linearRackTarget == linearRackHighPos) {
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                             linearRackTarget = linearRackHomePos;
                             holderPos = holderHomePos;                                     // Flip box before coming down
-                            HOLDER_ROTATE.setPosition(holderPos);
+                            HOLDER_ROTATE.setPosition(holderPos - 0.06);
+                            clamp1Pos = clamp1ClosePos;
+                            clamp2Pos = clamp2ClosePos;
+                            CLAMP1.setPosition(clamp1Pos);
+                            CLAMP2.setPosition(clamp2Pos);
                             sleep(200);
                         }
                         MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -276,44 +273,44 @@
                         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-                        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+                        if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                        else MOTOR_LEFT_LINEARRACK.setPower(0);
 
-                        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-                        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+                        if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                        else MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                         sleep(1500);
-                        if(linearRackTarget == linearRackHighPos){                          // Flip box at the top
+                        if (linearRackTarget == linearRackHighPos) {                          // Flip box at the top
                             holderPos = holderFlippedPos;
                             HOLDER_ROTATE.setPosition(holderPos);
                             sleep(200);
                         }
 
                     }
-                    if(gamepad1.left_bumper){                                               // Semi-auto scoring pixels part 2
+                    if (gamepad1.left_bumper) {                                               // Semi-auto scoring pixels part 2
                         if (clamp1Pos == clampOpenPos) {                                    // Open both clamps (with delay)
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
-                        }else{
+                        } else {
                             CLAMP1.setPosition(clampOpenPos);
                             clamp1Pos = clampOpenPos;
-                        }sleep(1000);
+                        }
+                        sleep(1000);
                         if (clamp2Pos == clampOpenPos) {
                             CLAMP2.setPosition(clamp2ClosePos);
                             clamp2Pos = clamp2ClosePos;
-                        }else{
+                        } else {
                             CLAMP2.setPosition(clampOpenPos);
                             clamp2Pos = clampOpenPos;
                         }
                         sleep(200);
                     }
-                    if(gamepad1.right_trigger >= 0.5){                                      // Bring up linear rack very low (stuck pixel)
-                        if(linearRackTarget == linearRackHomePos){
+                    if (gamepad1.right_trigger >= 0.5) {                                      // Bring up linear rack very low (stuck pixel)
+                        if (linearRackTarget == linearRackHomePos) {
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-500);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(500);
                             linearRackTarget = linearRackHighPos;
-                        }
-                        else if(linearRackTarget == linearRackHighPos){
+                        } else if (linearRackTarget == linearRackHighPos) {
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                             linearRackTarget = linearRackHomePos;
@@ -323,21 +320,19 @@
                         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-                        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+                        if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                        else MOTOR_LEFT_LINEARRACK.setPower(0);
 
-                        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-                        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+                        if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                        else MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                         sleep(400);
-                        }
                     }
 
 
-
                     // Game-pad 2
-                    if(gamepad2.a){                                                            // Turn on intake
-                        if(intakeStatus == 1){
+                    if (gamepad2.a) {                                                            // Turn on intake
+                        if (intakeStatus == 1) {
                             MOTOR_INTAKE.setPower(0.0);
                             LED2.setState(true);                                               // Turn on LED indicator
                             intakeStatus = 0;
@@ -349,13 +344,12 @@
                         sleep(200);
 
                     }
-                    if(gamepad2.y){                                                             // Bring up LR to hang height
-                        if(linearRackTarget == linearRackHomePos){
+                    if (gamepad2.y) {                                                             // Bring up LR to hang height
+                        if (linearRackTarget == linearRackHomePos) {
                             linearRackTarget = linearRackHighPos;
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackLiftPos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackLiftPos);
-                        }
-                        else if(linearRackTarget == linearRackHighPos){
+                        } else if (linearRackTarget == linearRackHighPos) {
                             MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                             MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
                             linearRackTarget = linearRackHomePos;
@@ -365,49 +359,49 @@
                         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                        if (MOTOR_LEFT_LINEARRACK.isBusy())  MOTOR_LEFT_LINEARRACK.setPower(-1);
-                        else                                 MOTOR_LEFT_LINEARRACK.setPower(0);
+                        if (MOTOR_LEFT_LINEARRACK.isBusy()) MOTOR_LEFT_LINEARRACK.setPower(-1);
+                        else MOTOR_LEFT_LINEARRACK.setPower(0);
 
-                        if (MOTOR_RIGHT_LINEARRACK.isBusy())  MOTOR_RIGHT_LINEARRACK.setPower(1);
-                        else                                  MOTOR_RIGHT_LINEARRACK.setPower(0);
+                        if (MOTOR_RIGHT_LINEARRACK.isBusy()) MOTOR_RIGHT_LINEARRACK.setPower(1);
+                        else MOTOR_RIGHT_LINEARRACK.setPower(0);
 
                         sleep(1000);
                     }
-                    if(gamepad2.b){                                                             // Close/Open both clamps and lift intake off the ground
+                    if (gamepad2.b) {                                                             // Close/Open both clamps and lift intake off the ground
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
-                        }else{
+                        } else {
                             CLAMP1.setPosition(clampOpenPos);
                             clamp1Pos = clampOpenPos;
-                            if(holderPos == holderHomePos){
+                            if (holderPos == holderHomePos) {
                                 HOLDER_ROTATE.setPosition(holderHomePos);
                             }
                         }
                         if (clamp2Pos == clampOpenPos) {
                             CLAMP2.setPosition(clamp2ClosePos);
                             clamp2Pos = clamp2ClosePos;
-                        }else{
+                        } else {
                             CLAMP2.setPosition(clampOpenPos);
                             clamp2Pos = clampOpenPos;
                         }
                         sleep(200);
                     }
-                    if(gamepad2.right_bumper){                                                 // Open/Close clamp 1
+                    if (gamepad2.right_bumper) {                                                 // Open/Close clamp 1
                         if (clamp1Pos == clampOpenPos) {
                             CLAMP1.setPosition(clamp1ClosePos);
                             clamp1Pos = clamp1ClosePos;
-                        }else{
+                        } else {
                             CLAMP1.setPosition(clampOpenPos);
                             clamp1Pos = clampOpenPos;
                         }
                         sleep(200);
                     }
-                    if(gamepad2.left_bumper){                                                  // Open/Close clamp 2
+                    if (gamepad2.left_bumper) {                                                  // Open/Close clamp 2
                         if (clamp2Pos == clampOpenPos) {
                             CLAMP2.setPosition(clamp2ClosePos);
                             clamp2Pos = clamp2ClosePos;
-                        }else{
+                        } else {
 
 
                             CLAMP2.setPosition(clampOpenPos);
@@ -415,8 +409,8 @@
                         }
                         sleep(200);
                     }
-                    if(gamepad2.x){                                                           // Launch Plane
-                        if(planePos == planeHoldPos){
+                    if (gamepad2.x) {                                                           // Launch Plane
+                        if (planePos == planeHoldPos) {
                             planePos = planeLaunchPos;
                         } else {
                             planePos = planeHoldPos;
@@ -424,15 +418,15 @@
                         PLANE_LAUNCH.setPosition(planePos);
                         sleep(200);
                     }
-                    if(gamepad2.right_trigger >= 0.5){                                       // Reverse intake
-                            if(intakeStatus == 1){
-                                MOTOR_INTAKE.setPower(0.0);
-                                intakeStatus = 0;
-                            }else{
-                                MOTOR_INTAKE.setPower(-intakeMotorPower);
-                                intakeStatus = 1;
-                            }
-                            sleep(200);
+                    if (gamepad2.right_trigger >= 0.5) {                                       // Reverse intake
+                        if (intakeStatus == 1) {
+                            MOTOR_INTAKE.setPower(0.0);
+                            intakeStatus = 0;
+                        } else {
+                            MOTOR_INTAKE.setPower(-intakeMotorPower);
+                            intakeStatus = 1;
+                        }
+                        sleep(200);
 
                     }
 
@@ -447,4 +441,5 @@
 
                     telemetry.update();
                 }
+        }
         }

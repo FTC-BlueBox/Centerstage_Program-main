@@ -9,19 +9,18 @@ TODO:
 ✔ Create scouting report
 ✔ Engineering portfolio
 ✔ Change isbusy()
+✔ Check box lift height and emergency lift
+✔ Maximize LR lift
+✔ Fix any dead zoning
+✔ Mount camera
+✔ Fix Wiring
+✔ Fix pixels not fully in-taking
+
+✔ Change holder pos in init
 
 - Test camera detection
-- Maximize LR lift
-- Check box lift height and emergency lift
-- Fix pixels not fully in-taking
-- Mount camera
 - Plane launch
-- Fix random disconnect (network congestion?)
-- Fix any dead zoning
-- Driver practice, allow rookies to drive
-
-- Run through presentation
-- Ask questions
-- Tune all autos (left side red, one right side red)
+- Fix random disconnect
+- Tune all autos
 
 

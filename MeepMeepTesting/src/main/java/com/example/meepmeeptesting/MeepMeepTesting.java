@@ -15,20 +15,20 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new Pose2d(-34, -62, Math.toRadians(90)))
-                                .forward(30)
-                                .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
+                                .forward(30)                                                           // Drive to prop and deposit pixel
+                                .turn(Math.toRadians(-90))
                                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
-                                   // AUTOHOLDER.setPosition(autoHolderReleasePos);
+                                    //AUTOHOLDER.setPosition(autoHolderReleasePos);
                                 })
                                 .waitSeconds(2)
-                                .back(2)
-                                .strafeRight(30)
-                                .turn(Math.toRadians(180))
-                                .splineToLinearHeading(new Pose2d(35, -10), Math.toRadians(0))                     // Move to side of backdrop (avoiding other team)
+                                .back(4)
+                                .strafeLeft(20)
+                                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))       // Drive next to backdrop and wait (for other team)
                                 .waitSeconds(8)
-                                .lineToLinearHeading(new Pose2d(45, -20, Math.toRadians(0)))              // Move in front of backdrop
+                                .lineToLinearHeading(new Pose2d(50, -20, Math.toRadians(0)))             // Drive in front of backdrop
+                                .turn(10) //check
+                                .forward(5)           // Move to the front of the backdrop
                                 .build()
-
                 );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)

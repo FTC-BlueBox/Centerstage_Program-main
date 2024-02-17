@@ -61,11 +61,11 @@ public class Auto_Red_FarSide extends LinearOpMode {
     double holderHomePos = 0.14;
     double holderFlippedPos = 0.5;
     double holderPos = holderHomePos;
-    double clamp1ClosePos = 0.8;
+    double clamp1ClosePos = 1;                                // Pixel clamp positions
     double clamp2ClosePos = 0.9;
-    double clampOpenPos = 0.0;
+    double clampOpenPos = 0.5;
     double clamp1Pos = clamp1ClosePos;
-    double clamp2Pos = clampOpenPos;
+    double clamp2Pos = clamp2ClosePos;
     double autoHolderHoldPos = 0.7;
     double autoHolderReleasePos = 1;
     double x,y;
@@ -75,7 +75,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
+    private static final String TFOD_MODEL_ASSET = "model.tflite";
 
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
@@ -128,14 +128,18 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 })
                 .waitSeconds(2)
                 .back(2)
-                .strafeRight(30)
-                .turn(Math.toRadians(180))
-                .splineToLinearHeading(new Pose2d(35, -10), Math.toRadians(0))            // Move to side of backdrop (avoiding other team)
+                .strafeRight(35)
+                .turn(Math.toRadians(190))
+                .forward((20))
+                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))       // Move to side of backdrop (avoiding other team)
                 .waitSeconds(8)
-                .lineToLinearHeading(new Pose2d(45, -20, Math.toRadians(0)))              // Move in front of backdrop
+                .lineToLinearHeading(new Pose2d(50, 0, Math.toRadians(0)))              // Move in front of backdrop
+                .turn(10) //check
+                .forward(5)
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
+                .back(5)
                 .strafeLeft(20)                                                        // Drive into park zone
                 .forward(10)
                 .build();
@@ -150,13 +154,17 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .back(4)
                 .strafeLeft(20)                                                        // Avoid other team
                 .forward(20)
-                .splineTo(new Vector2d(43, -15), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
+                .turn(Math.toRadians(-90))
+                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))                       // Move to backdrop and wait at the side (for other team)
                 .waitSeconds(8)
-                .lineToLinearHeading(new Pose2d(48, -36, Math.toRadians(0)))             // Move to the front of the backdrop
+                .lineToLinearHeading(new Pose2d(50, -8, Math.toRadians(0)))             // Move to the front of the backdrop
+                .turn(10) //check
+                .forward(5)
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
                 //Drive into the parking zone
+                .back(5)
                 .strafeLeft(23)
                 .forward(10)
                 .build();
@@ -171,12 +179,15 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 .waitSeconds(2)
                 .back(4)
                 .strafeLeft(20)
-                .splineToConstantHeading(new Vector2d(35, -10), Math.toRadians(90))      // Drive next to backdrop and wait (for other team)
+                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))       // Drive next to backdrop and wait (for other team)
                 .waitSeconds(8)
-                .lineToLinearHeading(new Pose2d(53, -44, Math.toRadians(0)))             // Drive in front of backdrop
+                .lineToLinearHeading(new Pose2d(50, -20, Math.toRadians(0)))             // Drive in front of backdrop
+                .turn(10) //check
+                .forward(5)
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
+                .back(5)
                 .strafeLeft(28)                                                        // Drive into parking zone
                 .forward(10)
                 .build();
@@ -258,13 +269,14 @@ public class Auto_Red_FarSide extends LinearOpMode {
             telemetry.addData("", " ");
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
 
-            if (x > 10 && x < 100) {
+            if (x > 0 && x < 175) {
                 position = 1;
-            } else if (x > 200 && x < 300) {
+            } else if (x > 475 && x < 600) {
                 position = 3;
-            } else {
+            } else { //175-475
                 position = 2;
             }
+            telemetry.addData("Position: ", position);
         }
     }
 
@@ -282,7 +294,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
 
         MOTOR_LEFT_LINEARRACK.setPower(-1);
         MOTOR_RIGHT_LINEARRACK.setPower(1);
-        sleep(2000);
+        sleep(1000);
 
         int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
@@ -298,7 +310,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
             MOTOR_LEFT_LINEARRACK.setPower(-1);
             MOTOR_RIGHT_LINEARRACK.setPower(1);
 
-            sleep(2000);
+            sleep(1000);
 
         }
 
@@ -307,7 +319,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
         sleep(500);
         CLAMP1.setPosition(clampOpenPos);
         sleep(500);
-        HOLDER_ROTATE.setPosition(holderHomePos);
+        HOLDER_ROTATE.setPosition(holderHomePos - 0.06);
         sleep(500);
 
         MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
@@ -321,7 +333,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
         MOTOR_LEFT_LINEARRACK.setPower(-1);
         MOTOR_RIGHT_LINEARRACK.setPower(1);
 
-        sleep(2000);
+        sleep(1000);
     }
 }
 

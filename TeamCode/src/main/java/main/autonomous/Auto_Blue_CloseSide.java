@@ -60,11 +60,11 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
     double holderHomePos = 0.14;
     double holderFlippedPos = 0.5;
     double holderPos = holderHomePos;
-    double clamp1ClosePos = 0.8;
+    double clamp1ClosePos = 1;                                // Pixel clamp positions
     double clamp2ClosePos = 0.9;
-    double clampOpenPos = 0.0;
+    double clampOpenPos = 0.5;
     double clamp1Pos = clamp1ClosePos;
-    double clamp2Pos = clampOpenPos;
+    double clamp2Pos = clamp2ClosePos;
     double autoHolderHoldPos = 0.7;
     double autoHolderReleasePos = 1;
     double x, y;
@@ -74,7 +74,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "FTCRobotController/assets/model.tflite";
+    private static final String TFOD_MODEL_ASSET = "model.tflite";
 
 
     // Define the labels recognized in the model for TFOD (must be in training order!)
@@ -129,10 +129,11 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 .waitSeconds(1)
                 .back(6)
                 .turn(Math.toRadians(83))
-                .lineToLinearHeading(new Pose2d(51, 40, 0))                        // Drive to backdrop
+                .lineToLinearHeading(new Pose2d(51, 43, 0))                        // Drive to backdrop
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
+                .back(5)
                 .strafeLeft(20)                                                         // Drive into park zone
                 .forward(10)
                 .build();
@@ -146,10 +147,11 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 .waitSeconds(1)
                 .back(6)
                 .turn(Math.toRadians(83))
-                .lineToLinearHeading(new Pose2d(50, 35, Math.toRadians(0)))               // Drive to backdrop
+                .lineToLinearHeading(new Pose2d(50, 38, Math.toRadians(0)))               // Drive to backdrop
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
+                .back(5)
                 .strafeLeft(23)                                                         // Drive into the parking zone
                 .forward(10)
                 .build();
@@ -165,10 +167,11 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 .waitSeconds(1)
                 .back(6)
                 .turn(Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(51, 28),0)
+                .splineToConstantHeading(new Vector2d(51, 30),0)
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
+                .back(5)
                 .strafeLeft(30)                                                           // Drive into parking zone
                 .forward(10)
                 .build();
@@ -246,16 +249,18 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
             x = (recognition.getLeft() + recognition.getRight()) / 2;
             y = (recognition.getTop() + recognition.getBottom()) / 2;
 
-            telemetry.addData("", " ");
-            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            //telemetry.addData("", " ");
+            telemetry.addData("Position", "%.0f / %.0f", x, y);
 
-            if (x > 10 && x < 100) {
+            if (x > 0 && x < 175) {
                 position = 1;
-            } else if (x > 200 && x < 300) {
+            } else if (x > 475 && x < 600) {
                 position = 3;
-            } else {
+            } else { //175-475
                 position = 2;
             }
+            telemetry.addData("Position: ", position);
+
         }
     }
 
@@ -273,7 +278,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
 
         MOTOR_LEFT_LINEARRACK.setPower(-1);
         MOTOR_RIGHT_LINEARRACK.setPower(1);
-        sleep(2000);
+        sleep(1000);
 
         int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
@@ -289,7 +294,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
             MOTOR_LEFT_LINEARRACK.setPower(-1);
             MOTOR_RIGHT_LINEARRACK.setPower(1);
 
-            sleep(2000);
+            sleep(1000);
             position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
         }
 
@@ -298,7 +303,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
         sleep(500);
         CLAMP1.setPosition(clampOpenPos);
         sleep(500);
-        HOLDER_ROTATE.setPosition(holderHomePos);
+        HOLDER_ROTATE.setPosition(holderHomePos - 0.06);
         sleep(500);
 
         MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
@@ -312,7 +317,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
         MOTOR_LEFT_LINEARRACK.setPower(-1);
         MOTOR_RIGHT_LINEARRACK.setPower(1);
 
-        sleep(2000);
+        sleep(1000);
     }
 }
 
