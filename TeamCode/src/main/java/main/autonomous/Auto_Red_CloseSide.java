@@ -283,7 +283,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
                     MOTOR_LEFT_LINEARRACK.setPower(-1);
                     MOTOR_RIGHT_LINEARRACK.setPower(1);
-
+//coment
                     sleep(1000);
                     position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
                 }
