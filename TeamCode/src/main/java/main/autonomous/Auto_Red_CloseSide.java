@@ -117,21 +117,21 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         // Team prop is on the left
         TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position
                 .forward(30)
-                .turn(Math.toRadians(90))
+                .turn(Math.toRadians(84))
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(1)
                 .back(6)
-                .turn(Math.toRadians(200))                                                      // Drive to backdrop
-                .lineToLinearHeading(new Pose2d(46, -15, Math.toRadians(15)))
-                .back(2)
+                .turn(Math.toRadians(200))
+                //CHECK!!!          // Drive to backdrop
+                .lineToLinearHeading(new Pose2d(47, -15, Math.toRadians(0)))
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
                 .back(4)
                 .strafeRight(31)                                                         // Drive into park zone
-                .forward(6)
+                .forward(10)
                 .build();
 
         // Team prop is in the middle
@@ -147,7 +147,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())    //Drive into the parking zone
-                .back(4)
+                .back(5)
                 .strafeRight(23)
                 .forward(10)
                 .build();
@@ -161,7 +161,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 })
                 .waitSeconds(1)
                 .back(6)
-                .turn(Math.toRadians(-90))
+                .turn(Math.toRadians(-90)) //83
                 .lineToLinearHeading(new Pose2d(52, -40, Math.toRadians(0)))           // Drive to backdrop
                 .build();
 
@@ -268,7 +268,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
                 MOTOR_LEFT_LINEARRACK.setPower(-1);
                 MOTOR_RIGHT_LINEARRACK.setPower(1);
-                sleep(1000);
+                sleep(2000);
 
                 int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
@@ -283,17 +283,16 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
                     MOTOR_LEFT_LINEARRACK.setPower(-1);
                     MOTOR_RIGHT_LINEARRACK.setPower(1);
-//coment
-                    sleep(1000);
+                    sleep(2000);
                     position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
                 }
 
                 HOLDER_ROTATE.setPosition(holderFlippedPos);
-                sleep(500);
+                sleep(1000);
                 CLAMP1.setPosition(clampOpenPos);
                 sleep(500);
                 HOLDER_ROTATE.setPosition(holderHomePos - 0.06);
-                sleep(500);
+                sleep(1000);
 
                 MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
                 MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);

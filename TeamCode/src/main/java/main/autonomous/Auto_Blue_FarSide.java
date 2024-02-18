@@ -136,7 +136,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
                 .back(5)
-                .strafeRight(32)                                                        // Drive into park zone
+                .strafeRight(30)                                                        // Drive into park zone
                 .forward(10)
                 .build();
 
@@ -159,7 +159,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
                 //Drive into the parking zone
                 .back(5)
-                .strafeRight(2)
+                .strafeRight(25)
                 .forward(10)
                 .build();
 
@@ -312,7 +312,7 @@ public class Auto_Blue_FarSide extends LinearOpMode {
         CLAMP1.setPosition(clampOpenPos);
         sleep(500);
         HOLDER_ROTATE.setPosition(holderHomePos - 0.06);
-        sleep(500);
+        sleep(800);
 
         MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
         MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
