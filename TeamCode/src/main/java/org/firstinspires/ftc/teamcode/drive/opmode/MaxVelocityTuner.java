@@ -78,6 +78,7 @@ public class MaxVelocityTuner extends LinearOpMode {
         telemetry.update();
 
         while (!isStopRequested() && opModeIsActive()) idle();
+        return 0;
     }
 
     private double veloInchesToTicks(double inchesPerSec) {

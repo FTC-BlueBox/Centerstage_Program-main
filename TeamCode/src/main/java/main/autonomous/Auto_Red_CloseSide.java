@@ -204,7 +204,8 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 drive.followTrajectorySequence(position2_p2);
             }
             }
-        }
+        return 0;
+    }
     public void initTfod() {
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()

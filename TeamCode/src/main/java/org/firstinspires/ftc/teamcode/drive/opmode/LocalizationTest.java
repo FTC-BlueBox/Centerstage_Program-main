@@ -44,5 +44,6 @@ LocalizationTest extends LinearOpMode {
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.update();
         }
+        return 0;
     }
 }
