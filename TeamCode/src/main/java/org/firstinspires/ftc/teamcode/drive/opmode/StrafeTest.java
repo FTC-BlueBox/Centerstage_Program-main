@@ -33,7 +33,7 @@ public class StrafeTest extends LinearOpMode {
 
         waitForStart();
 
-        if (isStopRequested()) return 0;
+        if (isStopRequested()) return;
 
         drive.followTrajectory(trajectory);
 
@@ -44,6 +44,5 @@ public class StrafeTest extends LinearOpMode {
         telemetry.update();
 
         while (!isStopRequested() && opModeIsActive()) ;
-        return 0;
     }
 }

@@ -211,7 +211,6 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
                 drive.followTrajectorySequence(position2_p2);
             }
         }
-        return 0;
     }
     public void initTfod() {
 
@@ -305,7 +304,7 @@ public class Auto_Blue_CloseSide extends LinearOpMode {
         CLAMP1.setPosition(clampOpenPos);
         sleep(500);
         HOLDER_ROTATE.setPosition(holderHomePos - 0.06);
-        sleep(800);
+        sleep(500);
 
         MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
         MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);

@@ -123,23 +123,25 @@ public class Auto_Red_FarSide extends LinearOpMode {
         TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position.forward(30)
                 .forward(30)
                 .turn(Math.toRadians(90))                                                       // Move to prop and deposit pixel
-                .forward(2)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {
                     AUTOHOLDER.setPosition(autoHolderReleasePos);
                 })
                 .waitSeconds(2)
-                .back(4)
-                /*.strafeRight(30)
-                .turn(Math.toRadians(185))
-                .lineToLinearHeading(new Pose2d(45, -10, Math.toRadians(0)))            // Move to side of backdrop (avoiding other team)
+                .back(2)
+                .strafeRight(35)
+                .turn(Math.toRadians(190))
+                .forward((20))
+                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))       // Move to side of backdrop (avoiding other team)
                 .waitSeconds(8)
-                .lineToLinearHeading(new Pose2d(48, -20, Math.toRadians(0)))              // Move in front of backdrop
+                .lineToLinearHeading(new Pose2d(50, 0, Math.toRadians(0)))              // Move in front of backdrop
+                .turn(10) //check
+                .forward(5)
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
                 .back(5)
-                .strafeLeft(15)                                                        // Drive into park zone
-                .forward(10)*/
+                .strafeLeft(20)                                                        // Drive into park zone
+                .forward(10)
                 .build();
 
         // Team prop is in the middle
@@ -150,18 +152,21 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 })
                 .waitSeconds(2)
                 .back(4)
-                /*.strafeLeft(20)                                                        // Avoid other team
+                .strafeLeft(20)                                                        // Avoid other team
                 .forward(20)
-                .splineTo(new Vector2d(40, -15), Math.toRadians(0))                      // Move to backdrop and wait at the side (for other team)
+                .turn(Math.toRadians(-90))
+                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))                       // Move to backdrop and wait at the side (for other team)
                 .waitSeconds(8)
-                .lineToLinearHeading(new Pose2d(48, -36, Math.toRadians(0)))             // Move to the front of the backdrop
+                .lineToLinearHeading(new Pose2d(50, -8, Math.toRadians(0)))             // Move to the front of the backdrop
+                .turn(10) //check
+                .forward(5)
                 .build();
 
         TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())
                 //Drive into the parking zone
                 .back(5)
                 .strafeLeft(23)
-                .forward(10)*/
+                .forward(10)
                 .build();
 
         // Team prop on the right
@@ -173,16 +178,18 @@ public class Auto_Red_FarSide extends LinearOpMode {
                 })
                 .waitSeconds(2)
                 .back(4)
-                /*.strafeLeft(20)
-                .splineToConstantHeading(new Vector2d(35, -10), Math.toRadians(90))      // Drive next to backdrop and wait (for other team)
+                .strafeLeft(20)
+                .lineToLinearHeading(new Pose2d(40, 20, Math.toRadians(0)))       // Drive next to backdrop and wait (for other team)
                 .waitSeconds(8)
-                .lineToLinearHeading(new Pose2d(53, -44, Math.toRadians(0)))             // Drive in front of backdrop
+                .lineToLinearHeading(new Pose2d(50, -20, Math.toRadians(0)))             // Drive in front of backdrop
+                .turn(10) //check
+                .forward(5)
                 .build();
 
         TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
                 .back(5)
                 .strafeLeft(28)                                                        // Drive into parking zone
-                .forward(10)*/
+                .forward(10)
                 .build();
 
         //Scan for prop
@@ -206,22 +213,21 @@ public class Auto_Red_FarSide extends LinearOpMode {
 
         if (!isStopRequested()) {
             // When program starts, run appropriate trajectory
-            telemetry.addData("Position", "%.0f / %.0f", x, y);
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
             if (position == 1) {
                 drive.followTrajectorySequence(position1_p1);
-                //deliverPixel();
-                //drive.followTrajectorySequence(position1_p2);
+                deliverPixel();
+                drive.followTrajectorySequence(position1_p2);
             } else if (position == 3) {
                 drive.followTrajectorySequence(position3_p1);
-               // deliverPixel();
-               // drive.followTrajectorySequence(position3_p2);
+                deliverPixel();
+                drive.followTrajectorySequence(position3_p2);
             } else {
                 drive.followTrajectorySequence(position2_p1);
-                //deliverPixel();
-               // drive.followTrajectorySequence(position2_p2);
+                deliverPixel();
+                drive.followTrajectorySequence(position2_p2);
             }
         }
-        return 0;
     }
     public void initTfod() {
 
@@ -261,7 +267,7 @@ public class Auto_Red_FarSide extends LinearOpMode {
             y = (recognition.getTop() + recognition.getBottom()) / 2;
 
             telemetry.addData("", " ");
-            telemetry.addData("Position", "%.0f / %.0f", x, y);
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
 
             if (x > 0 && x < 175) {
                 position = 1;

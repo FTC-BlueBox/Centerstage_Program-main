@@ -98,6 +98,5 @@ public class parkingAuto extends LinearOpMode {
         MOTOR4.setPower(0);
 
 
-        return 0;
     }
 }

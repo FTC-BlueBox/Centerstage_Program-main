@@ -61,7 +61,7 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
 
         waitForStart();
 
-        if (isStopRequested()) return 0;
+        if (isStopRequested()) return;
 
         telemetry.clearAll();
         telemetry.addLine("Running...");
@@ -102,6 +102,5 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
         while (!isStopRequested()) {
             idle();
         }
-        return 0;
     }
 }

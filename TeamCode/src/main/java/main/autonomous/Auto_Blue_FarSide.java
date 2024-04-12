@@ -220,7 +220,6 @@ public class Auto_Blue_FarSide extends LinearOpMode {
                 drive.followTrajectorySequence(position2_p2);
             }
         }
-        return 0;
     }
     public void initTfod() {
 

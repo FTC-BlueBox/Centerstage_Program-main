@@ -90,7 +90,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
         waitForStart();
 
-        if (isStopRequested()) return 0;
+        if (isStopRequested()) return;
 
         boolean movingForwards = true;
         MotionProfile activeProfile = generateProfile(true);
@@ -152,6 +152,5 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
             telemetry.update();
         }
-        return 0;
     }
 }

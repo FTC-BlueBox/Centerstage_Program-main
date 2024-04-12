@@ -50,7 +50,5 @@ public class BackAndForth extends LinearOpMode {
             drive.followTrajectory(trajectoryForward);
             drive.followTrajectory(trajectoryBackward);
         }
-        //return 0; //changes!
-        return 0;
     }
 }
