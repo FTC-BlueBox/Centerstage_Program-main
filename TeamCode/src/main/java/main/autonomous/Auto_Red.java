@@ -34,6 +34,7 @@ import android.util.Size;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -46,24 +47,25 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import java.util.List;
 
 
-@Autonomous(name="Auto_Red_CloseSide")
-public class Auto_Red_CloseSide extends LinearOpMode {
+@Autonomous(name="Auto_Red")
+public class Auto_Red extends LinearOpMode {
 
     // Initialize Variables
-    private Servo AUTOHOLDER, CLAMP1, CLAMP2, HOLDER_ROTATE;
-    private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK;
-    int linearRackHighPos = 2900;
+    private Servo CLAMP1, CLAMP2, BOX_FLIP, INTAKE_LIFT;
+    private CRServo GROUND_WHEELS;
+    private DcMotor MOTOR_LEFT_LINEARRACK, MOTOR_RIGHT_LINEARRACK, MOTOR_INTAKE;
+    int linearRackHighPos = 1500;
     int linearRackHomePos = 0;
-    double holderHomePos = 0.14;
-    double holderFlippedPos = 0.5;
-    double holderPos = holderHomePos;
-    double clamp1ClosePos = 1;                                // Pixel clamp positions
-    double clamp2ClosePos = 0.9;
-    double clampOpenPos = 0.5;
-    double clamp1Pos = clamp1ClosePos;
-    double clamp2Pos = clamp2ClosePos;
-    double autoHolderHoldPos = 0.7;
-    double autoHolderReleasePos = 1;
+    double boxHomePos = 1;                             // Top intake rotator positions
+    double boxFlippedPos = 0.4;
+    double boxPos = boxHomePos;
+
+    double clamp1ClosePos = 0.35;                                // Pixel clamp positions
+    double clamp1OpenPos = 0.0;
+    double clamp2OpenPos = 0.1;
+    double clamp2ClosePos = 0.4;
+    double clamp1Pos = clamp1OpenPos;
+    double clamp2Pos = clamp2OpenPos;
     double x,y;
     int position;
 
@@ -86,12 +88,15 @@ public class Auto_Red_CloseSide extends LinearOpMode {
     public void runOpMode() {
 
         // Hardware map all necessary motors and servos
-        AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
+        //AUTOHOLDER = hardwareMap.get(Servo.class, "AUTOHOLDER");
         MOTOR_LEFT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-LEFT-LINEARRACK");
         MOTOR_RIGHT_LINEARRACK = hardwareMap.get(DcMotor.class, "MOTOR-RIGHT-LINEARRACK");
         CLAMP1 = hardwareMap.get(Servo.class, "CLAMP1");
         CLAMP2 = hardwareMap.get(Servo.class, "CLAMP2");
-        HOLDER_ROTATE = hardwareMap.get(Servo.class, "HOLDER-ROTATE");
+        BOX_FLIP = hardwareMap.get(Servo.class, "BOX-FLIP");
+        INTAKE_LIFT = hardwareMap.get(Servo.class, "INTAKE-LIFT");
+        GROUND_WHEELS = hardwareMap.get(CRServo.class, "GROUND-WHEELS");
+        MOTOR_INTAKE = hardwareMap.get(DcMotor.class, "MOTOR-INTAKE");
 
         MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -103,73 +108,89 @@ public class Auto_Red_CloseSide extends LinearOpMode {
         MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Set servos to initialized positions
-        HOLDER_ROTATE.setPosition(holderPos - 0.06);   // main arm flip
-        CLAMP1.setPosition(clamp1Pos);                 // front pixel clamp
-        CLAMP2.setPosition(clamp2Pos);                 // back pixel clamp
-        AUTOHOLDER.setPosition(autoHolderHoldPos);
+        CLAMP1.setPosition(clamp1ClosePos);                 // front pixel clamp
+        CLAMP2.setPosition(clamp2ClosePos);                 // back pixel clamp
+        BOX_FLIP.setPosition(boxPos);
+        INTAKE_LIFT.setPosition(1);
 
         // Create road runner trajectories
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(12, -62, Math.toRadians(90));                       // Starting Position 12,-62 heading 90 degrees
+        Pose2d startPose = new Pose2d(12, -62, Math.toRadians(180));                       // Starting Position 12,-62 heading 90 degrees
         drive.setPoseEstimate(startPose);
 
         // Team prop is on the left
         TrajectorySequence position1_p1 = drive.trajectorySequenceBuilder(startPose)            // Create trajectory for left prop position
-                .forward(30)
-                .turn(Math.toRadians(84))
+                .back(24)
+                .turn(Math.toRadians(90))
+                .waitSeconds(0.5)
+                .back(0.5)
                 .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
-                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                    MOTOR_INTAKE.setPower(-1);
+                    GROUND_WHEELS.setPower(-1);
                 })
                 .waitSeconds(1)
-                .back(6)
-                .turn(Math.toRadians(200))
-                //CHECK!!!          // Drive to backdrop
-                .lineToLinearHeading(new Pose2d(47, -15, Math.toRadians(0)))
+                .forward(5)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                    MOTOR_INTAKE.setPower(0);
+                    GROUND_WHEELS.setPower(0);
+                })
+                .waitSeconds(0.5)
+                .forward(12)
+                //.turn(Math.toRadians(-90))
+                //.strafeLeft(3)
+                //.forward(18)
                 .build();
 
         TrajectorySequence position1_p2 = drive.trajectorySequenceBuilder(position1_p1.end())
                 .back(4)
-                .strafeRight(31)                                                         // Drive into park zone
-                .forward(10)
+                .strafeRight(10) //5
+                .forward(4)
                 .build();
 
         // Team prop is in the middle
         TrajectorySequence position2_p1 = drive.trajectorySequenceBuilder(startPose)             // Create trajectory for middle prop position
-                .forward(29)
-                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                             // Drive forward and drop off pixel
-                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                .back(23)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                    MOTOR_INTAKE.setPower(-1);
+                    GROUND_WHEELS.setPower(-1);
                 })
                 .waitSeconds(1)
-                .back(6)
-                .turn(Math.toRadians(-90))
-                .lineToLinearHeading(new Pose2d(50, -36, Math.toRadians(0)))               // Drive to backdrop
-                .build();
-
-        TrajectorySequence position2_p2 = drive.trajectorySequenceBuilder(position2_p1.end())    //Drive into the parking zone
+                .forward(6)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                    MOTOR_INTAKE.setPower(0);
+                    GROUND_WHEELS.setPower(0);
+                })
+                .waitSeconds(0.5)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                    INTAKE_LIFT.setPosition(1);
+                })
+                .waitSeconds(0.5)
                 .back(5)
-                .strafeRight(23)
-                .forward(10)
+                .strafeRight(8)
                 .build();
 
         // Team prop on the right
         TrajectorySequence position3_p1 = drive.trajectorySequenceBuilder(startPose)             // Create trajectory for right prop position
-                .strafeRight(15)
-                .forward(20)
-                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                             // Drive to and drop off pixel
-                    AUTOHOLDER.setPosition(autoHolderReleasePos);
+                .back(24)
+                .waitSeconds(0.5)
+                .turn(Math.toRadians(-90))
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                    MOTOR_INTAKE.setPower(-1);
+                    GROUND_WHEELS.setPower(-1);
                 })
                 .waitSeconds(1)
-                .back(6)
-                .turn(Math.toRadians(-90)) //83
-                .lineToLinearHeading(new Pose2d(52, -40, Math.toRadians(0)))           // Drive to backdrop
+                .forward(5)
+                .UNSTABLE_addTemporalMarkerOffset(0.5, () -> {                            // Run to prop and release pixel
+                    MOTOR_INTAKE.setPower(0);
+                    GROUND_WHEELS.setPower(0);
+                })
+                .waitSeconds(0.5)
+                .turn(Math.toRadians(90))
+                .back(7)
                 .build();
 
-        TrajectorySequence position3_p2 = drive.trajectorySequenceBuilder(position3_p1.end())
-                .back(6)
-                .strafeRight(20)                                                   // Drive into parking zone
-                .forward(8)
-                .build();
+
 
         //Scan for prop
         initTfod();
@@ -189,19 +210,21 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
         if (!isStopRequested()) {
             // When program starts, run appropriate trajectory
+            INTAKE_LIFT.setPosition(0.775);
+            sleep(1000);
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
             if (position == 1) {
                 drive.followTrajectorySequence(position1_p1);
-                deliverPixel();
-                drive.followTrajectorySequence(position1_p2);
+                //deliverPixel();
+               // drive.followTrajectorySequence(position1_p2);
             } else if (position == 3) {
                 drive.followTrajectorySequence(position3_p1);
-                deliverPixel();
-                drive.followTrajectorySequence(position3_p2);
+               // deliverPixel();
+               // drive.followTrajectorySequence(position3_p2);
             } else {
                 drive.followTrajectorySequence(position2_p1);
-                deliverPixel();
-                drive.followTrajectorySequence(position2_p2);
+                //deliverPixel();
+                //drive.followTrajectorySequence(position2_p2);
             }
             }
         }
@@ -258,8 +281,8 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 MOTOR_RIGHT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 MOTOR_LEFT_LINEARRACK.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
-                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(linearRackHighPos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(-linearRackHighPos);
 
                 MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -268,13 +291,13 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
                 MOTOR_LEFT_LINEARRACK.setPower(-1);
                 MOTOR_RIGHT_LINEARRACK.setPower(1);
-                sleep(2000);
+                sleep(1000);
 
                 int position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
 
                 if (position1 == linearRackHomePos) {
-                    MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHighPos);
-                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHighPos);
+                    MOTOR_LEFT_LINEARRACK.setTargetPosition(linearRackHighPos);
+                    MOTOR_RIGHT_LINEARRACK.setTargetPosition(-linearRackHighPos);
 
                     MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -283,19 +306,19 @@ public class Auto_Red_CloseSide extends LinearOpMode {
 
                     MOTOR_LEFT_LINEARRACK.setPower(-1);
                     MOTOR_RIGHT_LINEARRACK.setPower(1);
-                    sleep(2000);
+                    sleep(1000);
                     position1 = MOTOR_LEFT_LINEARRACK.getCurrentPosition();
                 }
 
-                HOLDER_ROTATE.setPosition(holderFlippedPos);
+                BOX_FLIP.setPosition(boxFlippedPos);
+                sleep(1600);
+                CLAMP1.setPosition(clamp1OpenPos);
                 sleep(1000);
-                CLAMP1.setPosition(clampOpenPos);
-                sleep(500);
-                HOLDER_ROTATE.setPosition(holderHomePos - 0.06);
+                BOX_FLIP.setPosition(boxHomePos);
                 sleep(1000);
 
-                MOTOR_LEFT_LINEARRACK.setTargetPosition(-linearRackHomePos);
-                MOTOR_RIGHT_LINEARRACK.setTargetPosition(linearRackHomePos);
+                MOTOR_LEFT_LINEARRACK.setTargetPosition(linearRackHomePos);
+                MOTOR_RIGHT_LINEARRACK.setTargetPosition(-linearRackHomePos);
 
                 MOTOR_LEFT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 MOTOR_RIGHT_LINEARRACK.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -305,7 +328,7 @@ public class Auto_Red_CloseSide extends LinearOpMode {
                 MOTOR_LEFT_LINEARRACK.setPower(-1);
                 MOTOR_RIGHT_LINEARRACK.setPower(1);
 
-                sleep(1000);
+                sleep(500);
             }
         }
 
